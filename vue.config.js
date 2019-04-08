@@ -16,5 +16,8 @@ module.exports = {
         javascriptEnabled: true
       }
     }
+  },
+  devServer: {
+    open: true
   }
 };
