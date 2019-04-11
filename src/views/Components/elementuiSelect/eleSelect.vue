@@ -1,64 +1,59 @@
 <template>
   <div
-    class="el-select el-select-holy"
+    class="el-select"
     :class="[selectSize ? 'el-select--' + selectSize : '']"
     @click.stop="toggleMenu"
     v-clickoutside="handleClose"
   >
-    <el-tooltip class="item" effect="dark" placement="top-start">
-      <div slot="content" ref="tooltip" class="el-tooltip-content"></div>
-      <div
-        class="el-select__tags"
-        ref="tags"
-        v-if="multiple"
-        :style="{ 'max-width': inputWidth - 32 + 'px', width: '100%' }"
+    <!-- 标签集 多选模式下 -->
+    <div
+      class="el-select__tags"
+      v-if="multiple"
+      ref="tags"
+      :style="{ 'max-width': inputWidth - 32 + 'px', width: '100%' }"
+      >
+      <span v-if="collapseTags && selected.length">
+        <el-tag
+          :closable="!selectDisabled"
+          :size="collapseTagSize"
+          :hit="selected[0].hitState"
+          type="info"
+          @close="deleteTag($event, selected[0])"
+          disable-transitions
         >
-        <!-- 选择了 collapse-tags 多选时显示 +2 不显示所有已选标签-->
-        <span v-if="collapseTags && selected.length">
-          <el-tag
-            :closable="!selectDisabled"
-            :size="collapseTagSize"
-            :hit="selected[0].hitState"
-            type="info"
-            @close="deleteTag($event, selected[0])"
-            disable-transitions
-          >
-            <span class="el-select__tags-text">{{
-              selected[0].currentLabel
-            }}</span>
-          </el-tag>
-          <el-tag
-            v-if="selected.length > 1"
-            :closable="false"
-            :size="collapseTagSize"
-            type="info"
-            disable-transitions
-          >
-            <span class="el-select__tags-text"
-              >+ {{ selected.length - 1 }}</span
-            >
-          </el-tag>
-        </span>
-        <!-- 显示全部标签 -->
-        <transition-group @after-leave="resetInputHeight" v-if="!collapseTags">
-          <el-tag
-            v-for="item in selected"
-            :key="getValueKey(item)"
-            :closable="!selectDisabled"
-            :size="collapseTagSize"
-            :hit="item.hitState"
-            type="info"
-            @close="deleteTag($event, item)"
-            disable-transitions
-          >
-            <span class="el-select__tags-text">{{ item.currentLabel }}</span>
-          </el-tag>
-        </transition-group>
-        <!-- 如果是filterable 则在tags的最后出现一个输入框 用作筛选 -->
-        <!-- <input
+          <span class="el-select__tags-text">{{
+            selected[0].currentLabel
+          }}</span>
+        </el-tag>
+        <el-tag
+          v-if="selected.length > 1"
+          :closable="false"
+          :size="collapseTagSize"
+          type="info"
+          disable-transitions
+        >
+          <span class="el-select__tags-text">+ {{ selected.length - 1 }}</span>
+        </el-tag>
+      </span>
+      <transition-group @after-leave="resetInputHeight" v-if="!collapseTags">
+        <el-tag
+          v-for="item in selected"
+          :key="getValueKey(item)"
+          :closable="!selectDisabled"
+          :size="collapseTagSize"
+          :hit="item.hitState"
+          type="info"
+          @close="deleteTag($event, item)"
+          disable-transitions
+        >
+          <span class="el-select__tags-text">{{ item.currentLabel }}</span>
+        </el-tag>
+      </transition-group>
+
+      <input
         type="text"
         class="el-select__input"
-        :class="[selectSize ? `is-${ selectSize }` : '']"
+        :class="[selectSize ? `is-${selectSize}` : '']"
         :disabled="selectDisabled"
         :autocomplete="autoComplete || autocomplete"
         @focus="handleFocus"
@@ -77,10 +72,14 @@
         v-model="query"
         @input="debouncedQueryChange"
         v-if="filterable"
-        :style="{ 'flex-grow': '1', width: inputLength / (inputWidth - 32) + '%', 'max-width': inputWidth - 42 + 'px' }"
-        ref="input"> -->
-      </div>
-    </el-tooltip>
+        :style="{
+          'flex-grow': '1',
+          width: inputLength / (inputWidth - 32) + '%',
+          'max-width': inputWidth - 42 + 'px'
+        }"
+        ref="input"
+      />
+    </div>
     <!-- 最基础的输入框 显示的组件形式 -->
     <el-input
       ref="reference"
@@ -106,7 +105,7 @@
       @paste.native="debouncedOnInputChange"
       @mouseenter.native="inputHovering = true"
       @mouseleave.native="inputHovering = false"
-    >
+      >
       <template slot="prefix" v-if="$slots.prefix">
         <slot name="prefix"></slot>
       </template>
@@ -126,7 +125,6 @@
         ></i>
       </template>
     </el-input>
-    <!-- 下拉框 -->
     <transition
       name="el-zoom-in-top"
       @before-enter="handleMenuEnter"
@@ -136,36 +134,7 @@
         ref="popper"
         :append-to-body="popperAppendToBody"
         v-show="visible && emptyText !== false"
-      >
-        <div
-          class="filterBox"
-          :style="{ height: `${initialInputHeight}px` }"
-          v-if="filterable && multiple"
         >
-          <i class="el-icon-plus" @click="handleQuerySelect('add')"></i>
-          <input
-            type="text"
-            class="el-select__input"
-            :disabled="selectDisabled"
-            :autocomplete="autoComplete || autocomplete"
-            autofocus
-            @focus="handleFocus"
-            @blur="softFocus = false"
-            @click.stop
-            @keyup="managePlaceholder"
-            @keydown.exact="resetInputState"
-            @keydown.down.prevent="navigateOptions('next')"
-            @keydown.up.prevent="navigateOptions('prev')"
-            @keydown.enter.prevent="selectOption"
-            @keydown.esc.stop.prevent="visible = false"
-            v-model="query"
-            @input="debouncedQueryChange"
-            ref="input"
-          />
-          <i class="el-icon-minus" @click="handleQuerySelect('delete')"></i>
-        </div>
-
-        <!-- 固定高度滚动框 -->
         <el-scrollbar
           tag="ul"
           wrap-class="el-select-dropdown__wrap"
@@ -176,28 +145,31 @@
           }"
           v-show="options.length > 0 && !loading"
         >
-          <!-- 当allow-create 和  filterable 时 显示想要创建的条目-->
-          <!-- 在tags中有 但是在options中没有 -->
           <el-option :value="query" created v-if="showNewOption"> </el-option>
           <slot></slot>
         </el-scrollbar>
-        <p
-          class="el-select-dropdown__empty"
+        <template
           v-if="
             emptyText &&
               (!allowCreate || loading || (allowCreate && options.length === 0))
           "
         >
-          {{ emptyText }}
-        </p>
+          <slot name="empty" v-if="$slots.empty"></slot>
+          <p class="el-select-dropdown__empty" v-else>
+            {{ emptyText }}
+          </p>
+        </template>
       </el-select-menu>
     </transition>
   </div>
 </template>
 
 <script type="text/babel">
+import Emitter from "element-ui/lib/mixins/emitter";
+import Focus from "element-ui/lib/mixins/focus";
+import Locale from "element-ui/lib/mixins/locale";
+import ElSelectMenu from "element-ui/packages/select/src/select-dropdown";
 import ElScrollbar from "element-ui/lib/scrollbar";
-import { isKorean } from "element-ui/lib/utils/shared";
 import debounce from "throttle-debounce/debounce";
 import Clickoutside from "element-ui/lib/utils/clickoutside";
 import {
@@ -212,14 +184,9 @@ import {
   isIE,
   isEdge
 } from "element-ui/lib/utils/util";
-import Emitter from "element-ui/lib/mixins/emitter";
-import Focus from "element-ui/lib/mixins/focus";
-import Locale from "element-ui/lib/mixins/locale";
-import ElSelectMenu from "element-ui/packages/select/src/select-dropdown";
-// import
 import NavigationMixin from "element-ui/packages/select/src/navigation-mixin";
+import { isKorean } from "element-ui/lib/utils/shared";
 
-/* eslint-disable */
 export default {
   mixins: [Emitter, Locale, Focus("reference"), NavigationMixin],
   name: "ElSelect",
@@ -242,53 +209,77 @@ export default {
       return (this.elFormItem || {}).elFormItemSize;
     },
     readonly() {
-      return !this.filterable || this.multiple || (!isIE() && !isEdge() && !this.visible);
+      return (
+        !this.filterable ||
+        this.multiple ||
+        (!isIE() && !isEdge() && !this.visible)
+      );
     },
     showClose() {
-      const hasValue = this.multiple
+      debugger;
+      let hasValue = this.multiple
         ? Array.isArray(this.value) && this.value.length > 0
         : this.value !== undefined && this.value !== null && this.value !== "";
-      const criteria = this.clearable
-          && !this.selectDisabled
-          && this.inputHovering
-          && hasValue;
+      let criteria =
+        this.clearable &&
+        !this.selectDisabled &&
+        this.inputHovering &&
+        hasValue;
       return criteria;
     },
+    // remote && filterable 没有下拉框（不显示触发箭头）
     iconClass() {
-      return this.remote && this.filterable ? "" : (this.visible ? "arrow-up is-reverse" : "arrow-up");
+      return this.remote && this.filterable
+        ? ""
+        : this.visible
+        ? "arrow-up is-reverse"
+        : "arrow-up";
     },
     debounce() {
       return this.remote ? 300 : 0;
     },
     emptyText() {
+      debugger;
       if (this.loading) {
         return this.loadingText || this.t("el.select.loading");
+      } else {
+        if (this.remote && this.query === "" && this.options.length === 0)
+          return false;
+        if (
+          this.filterable &&
+          this.query &&
+          this.options.length > 0 &&
+          this.filteredOptionsCount === 0
+        ) {
+          return this.noMatchText || this.t("el.select.noMatch");
+        }
+        if (this.options.length === 0) {
+          return this.noDataText || this.t("el.select.noData");
+        }
       }
-      if (this.remote && this.query === "" && this.options.length === 0) return false;
-      if (this.filterable && this.query && this.options.length > 0 && this.filteredOptionsCount === 0) {
-        return this.noMatchText || this.t("el.select.noMatch");
-      }
-      if (this.options.length === 0) {
-        return this.noDataText || this.t("el.select.noData");
-      }
-
       return null;
     },
     showNewOption() {
-      const hasExistingOption = this.options.filter(option => !option.created)
+      debugger;
+      let hasExistingOption = this.options
+        .filter(option => !option.created)
         .some(option => option.currentLabel === this.query);
-      return this.filterable && this.allowCreate && this.query !== "" && !hasExistingOption;
+      return (
+        this.filterable &&
+        this.allowCreate &&
+        this.query !== "" &&
+        !hasExistingOption
+      );
     },
     selectSize() {
       return this.size || this._elFormItemSize || (this.$ELEMENT || {}).size;
     },
+    // 禁用模式 disabled (select)和外层el-form的禁用模式
     selectDisabled() {
       return this.disabled || (this.elForm || {}).disabled;
     },
     collapseTagSize() {
-      return ["small", "mini"].indexOf(this.selectSize) > -1
-        ? "mini"
-        : "small";
+      return ["small", "mini"].indexOf(this.selectSize) > -1 ? "mini" : "small";
     }
   },
   components: {
@@ -310,9 +301,11 @@ export default {
     autoComplete: {
       type: String,
       validator(val) {
-        if(process.env.NODE_ENV !== "production"){
-           return true;
-        }  
+        process.env.NODE_ENV !== "production" &&
+          console.warn(
+            "[Element Warn][Select]'auto-complete' property will be deprecated in next major version. please use 'autocomplete' instead."
+          );
+        return true;
       }
     },
     automaticDropdown: Boolean,
@@ -355,10 +348,10 @@ export default {
   data() {
     return {
       options: [],
-      cachedOptions: [], // TODO: 从哪获取的数据
+      cachedOptions: [],
       createdLabel: null,
       createdSelected: false,
-      selected: this.multiple ? [] : {}, // select 已选的数据
+      selected: this.multiple ? [] : {},
       inputLength: 20,
       inputWidth: 0,
       initialInputHeight: 0,
@@ -367,13 +360,13 @@ export default {
       filteredOptionsCount: 0,
       visible: false,
       softFocus: false,
-      selectedLabel: "", // el-select 输入框的输入值
-      hoverIndex: -1, // 针对 enter 事件 确定option的index
+      selectedLabel: "",
+      hoverIndex: -1,
       query: "",
       previousQuery: null,
-      inputHovering: false,
-      currentPlaceholder: "", // 组件的占位符
-      menuVisibleOnFocus: false, // 切换选择菜单是否可见
+      inputHovering: false, // 鼠标移入输入框
+      currentPlaceholder: "",
+      menuVisibleOnFocus: false,
       isOnComposition: false,
       isSilentBlur: false
     };
@@ -388,8 +381,9 @@ export default {
       this.cachedPlaceHolder = this.currentPlaceholder = val;
     },
     value(val, oldVal) {
+      debugger;
       if (this.multiple) {
-        // this.resetInputHeight();
+        this.resetInputHeight();
         if (val.length > 0 || (this.$refs.input && this.query !== "")) {
           this.currentPlaceholder = "";
         } else {
@@ -409,6 +403,7 @@ export default {
       }
     },
     visible(val) {
+      debugger;
       if (!val) {
         this.broadcast("ElSelectDropdown", "destroyPopper");
         if (this.$refs.input) {
@@ -421,24 +416,26 @@ export default {
         this.menuVisibleOnFocus = false;
         this.resetHoverIndex();
         this.$nextTick(() => {
-          if (this.$refs.input
-              && this.$refs.input.value === ""
-              && this.selected.length === 0) {
+          if (
+            this.$refs.input &&
+            this.$refs.input.value === "" &&
+            this.selected.length === 0
+          ) {
             this.currentPlaceholder = this.cachedPlaceHolder;
-            this.fillTooltip();
           }
         });
         if (!this.multiple) {
           if (this.selected) {
-            if (this.filterable && this.allowCreate
-                && this.createdSelected && this.createdLabel) {
-              // 是说允许创建新条目时 输入框显示新条目的 label
+            if (
+              this.filterable &&
+              this.allowCreate &&
+              this.createdSelected &&
+              this.createdLabel
+            ) {
               this.selectedLabel = this.createdLabel;
             } else {
-              // 非多选情况下 输入框显示选择条目的 label
               this.selectedLabel = this.selected.currentLabel;
             }
-            // 允许筛选时 筛选条件设置为 （输入框显示选择条目的 label）
             if (this.filterable) this.query = this.selectedLabel;
           }
         }
@@ -466,35 +463,24 @@ export default {
         this.broadcast("ElSelectDropdown", "updatePopper");
       });
       if (this.multiple) {
-        // this.resetInputHeight();
+        this.resetInputHeight();
       }
-      const inputs = this.$el.querySelectorAll("input");
+      let inputs = this.$el.querySelectorAll("input");
       if ([].indexOf.call(inputs, document.activeElement) === -1) {
         this.setSelected();
       }
-      if (this.defaultFirstOption && (this.filterable || this.remote) && this.filteredOptionsCount) {
+      if (
+        this.defaultFirstOption &&
+        (this.filterable || this.remote) &&
+        this.filteredOptionsCount
+      ) {
         this.checkDefaultFirstOption();
       }
     }
   },
   methods: {
-    // handleQueryAdd() {
-    //   const selectedOptions = this.options.filter(option => option.visible);
-    //   this.handleOptionCustomSelect(selectedOptions, 'add');
-
-    //   console.log(this.cachedOptions, this.options, 'options');
-    // },
-    // handleQueryPlus() {
-    //   const selectedOptions = this.options.filter(option => option.visible);
-    //   this.handleOptionCustomSelect(selectedOptions, 'delete');
-
-    //   console.log(this.cachedOptions, this.options, 'options');
-    // },
-    handleQuerySelect(type) {
-      const selectedOptions = this.options.filter(option => option.visible);
-      this.handleOptionCustomSelect(selectedOptions, type);
-    },
     handleComposition(event) {
+      debugger;
       const text = event.target.value;
       if (event.type === "compositionend") {
         this.isOnComposition = false;
@@ -505,11 +491,12 @@ export default {
       }
     },
     handleQueryChange(val) {
-      // debugger;
+      debugger;
       if (this.previousQuery === val || this.isOnComposition) return;
       if (
-        this.previousQuery === null
-          && (typeof this.filterMethod === "function" || typeof this.remoteMethod === "function")
+        this.previousQuery === null &&
+        (typeof this.filterMethod === "function" ||
+          typeof this.remoteMethod === "function")
       ) {
         this.previousQuery = val;
         return;
@@ -533,18 +520,25 @@ export default {
         this.broadcast("ElOptionGroup", "queryChange");
       } else {
         this.filteredOptionsCount = this.optionsCount;
-        // console.log("eloption", val);
         this.broadcast("ElOption", "queryChange", val);
         this.broadcast("ElOptionGroup", "queryChange");
       }
-      if (this.defaultFirstOption && (this.filterable || this.remote) && this.filteredOptionsCount) {
+      if (
+        this.defaultFirstOption &&
+        (this.filterable || this.remote) &&
+        this.filteredOptionsCount
+      ) {
         this.checkDefaultFirstOption();
       }
     },
     scrollToOption(option) {
-      const target = Array.isArray(option) && option[0] ? option[0].$el : option.$el;
+      debugger;
+      const target =
+        Array.isArray(option) && option[0] ? option[0].$el : option.$el;
       if (this.$refs.popper && target) {
-        const menu = this.$refs.popper.$el.querySelector(".el-select-dropdown__wrap");
+        const menu = this.$refs.popper.$el.querySelector(
+          ".el-select-dropdown__wrap"
+        );
         scrollIntoView(menu, target);
       }
       this.$refs.scrollbar && this.$refs.scrollbar.handleScroll();
@@ -553,20 +547,23 @@ export default {
       this.$nextTick(() => this.scrollToOption(this.selected));
     },
     emitChange(val) {
-      debugger
       if (!valueEquals(this.value, val)) {
         this.$emit("change", val);
       }
     },
     getOption(value) {
-      // debugger;
+      debugger;
       let option;
-      const isObject = Object.prototype.toString.call(value).toLowerCase() === "[object object]";
-      const isNull = Object.prototype.toString.call(value).toLowerCase() === "[object null]";
+      const isObject =
+        Object.prototype.toString.call(value).toLowerCase() ===
+        "[object object]";
+      const isNull =
+        Object.prototype.toString.call(value).toLowerCase() === "[object null]";
       for (let i = this.cachedOptions.length - 1; i >= 0; i--) {
         const cachedOption = this.cachedOptions[i];
         const isEqual = isObject
-          ? getValueByPath(cachedOption.value, this.valueKey) === getValueByPath(value, this.valueKey)
+          ? getValueByPath(cachedOption.value, this.valueKey) ===
+            getValueByPath(value, this.valueKey)
           : cachedOption.value === value;
         if (isEqual) {
           option = cachedOption;
@@ -574,10 +571,9 @@ export default {
         }
       }
       if (option) return option;
-      const label = (!isObject && !isNull)
-        ? value : "";
-      const newOption = {
-        value,
+      const label = !isObject && !isNull ? value : "";
+      let newOption = {
+        value: value,
         currentLabel: label
       };
       if (this.multiple) {
@@ -586,9 +582,9 @@ export default {
       return newOption;
     },
     setSelected() {
-      // debugger;
+      debugger;
       if (!this.multiple) {
-        const option = this.getOption(this.value);
+        let option = this.getOption(this.value);
         if (option.created) {
           this.createdLabel = option.currentLabel;
           this.createdSelected = true;
@@ -597,22 +593,22 @@ export default {
         }
         this.selectedLabel = option.currentLabel;
         this.selected = option;
-
         if (this.filterable) this.query = this.selectedLabel;
         return;
       }
-      const result = [];
+      let result = [];
       if (Array.isArray(this.value)) {
-        this.value.forEach((value) => {
+        this.value.forEach(value => {
           result.push(this.getOption(value));
         });
       }
       this.selected = result;
       this.$nextTick(() => {
-        this.fillTooltip();
+        this.resetInputHeight();
       });
     },
     handleFocus(event) {
+      debugger;
       if (!this.softFocus) {
         if (this.automaticDropdown || this.filterable) {
           this.visible = true;
@@ -628,6 +624,7 @@ export default {
       this.$refs.reference.blur();
     },
     handleBlur(event) {
+      debugger;
       setTimeout(() => {
         if (this.isSilentBlur) {
           this.isSilentBlur = false;
@@ -647,6 +644,7 @@ export default {
       this.visible = false;
     },
     toggleLastOptionHitState(hit) {
+      debugger;
       if (!Array.isArray(this.selected)) return;
       const option = this.selected[this.selected.length - 1];
       if (!option) return;
@@ -658,7 +656,7 @@ export default {
       return option.hitState;
     },
     deletePrevTag(e) {
-      debugger
+      debugger;
       if (e.target.value.length <= 0 && !this.toggleLastOptionHitState()) {
         const value = this.value.slice();
         value.pop();
@@ -667,43 +665,59 @@ export default {
       }
     },
     managePlaceholder() {
-      // debugger;
+      debugger;
       if (this.currentPlaceholder !== "") {
-        this.currentPlaceholder = this.$refs.input.value ? "" : this.cachedPlaceHolder;
+        this.currentPlaceholder = this.$refs.input.value
+          ? ""
+          : this.cachedPlaceHolder;
       }
     },
     resetInputState(e) {
+      debugger;
       if (e.keyCode !== 8) this.toggleLastOptionHitState(false);
       this.inputLength = this.$refs.input.value.length * 15 + 20;
       this.resetInputHeight();
     },
     resetInputHeight() {
+      debugger;
       if (this.collapseTags && !this.filterable) return;
       this.$nextTick(() => {
         if (!this.$refs.reference) return;
-        const inputChildNodes = this.$refs.reference.$el.childNodes;
-        const input = [].filter.call(inputChildNodes, item => item.tagName === "INPUT")[0];
+        let inputChildNodes = this.$refs.reference.$el.childNodes;
+        let input = [].filter.call(
+          inputChildNodes,
+          item => item.tagName === "INPUT"
+        )[0];
         const tags = this.$refs.tags;
         const sizeInMap = this.initialInputHeight || 40;
-        input.style.height = this.selected.length === 0
-          ? `${sizeInMap}px`
-          : `${Math.max(
-            tags ? (tags.clientHeight + (tags.clientHeight > sizeInMap ? 6 : 0)) : 0,
-            sizeInMap,
-          )}px`;
+        input.style.height =
+          this.selected.length === 0
+            ? sizeInMap + "px"
+            : Math.max(
+                tags
+                  ? tags.clientHeight + (tags.clientHeight > sizeInMap ? 6 : 0)
+                  : 0,
+                sizeInMap
+              ) + "px";
         if (this.visible && this.emptyText !== false) {
           this.broadcast("ElSelectDropdown", "updatePopper");
         }
       });
     },
     resetHoverIndex() {
+      debugger;
       setTimeout(() => {
         if (!this.multiple) {
           this.hoverIndex = this.options.indexOf(this.selected);
-        } else if (this.selected.length > 0) {
-          this.hoverIndex = Math.min.apply(null, this.selected.map(item => this.options.indexOf(item)));
         } else {
-          this.hoverIndex = -1;
+          if (this.selected.length > 0) {
+            this.hoverIndex = Math.min.apply(
+              null,
+              this.selected.map(item => this.options.indexOf(item))
+            );
+          } else {
+            this.hoverIndex = -1;
+          }
         }
       }, 300);
     },
@@ -714,14 +728,16 @@ export default {
         const optionIndex = this.getValueIndex(value, option.value);
         if (optionIndex > -1) {
           value.splice(optionIndex, 1);
-        } else if (this.multipleLimit <= 0 || value.length < this.multipleLimit) {
+        } else if (
+          this.multipleLimit <= 0 ||
+          value.length < this.multipleLimit
+        ) {
           value.push(option.value);
         }
         this.$emit("input", value);
         this.emitChange(value);
         if (option.created) {
           this.query = "";
-          debugger;
           this.handleQueryChange("");
           this.inputLength = 20;
         }
@@ -738,51 +754,6 @@ export default {
         this.scrollToOption(option);
       });
     },
-    handleOptionCustomSelect(options, type = "add") {
-      // debugger;
-      if (this.multiple) {
-        const value = this.value.slice();
-        if (!Array.isArray(options)) {
-          this.handleOptionSelect(options);
-          return;
-        }
-        if (type === "add") {
-          for (let i = 0; i < options.length; i++) {
-            const optionIndex = this.getValueIndex(value, options[i].value);
-            if ((this.multipleLimit <= 0 || value.length < this.multipleLimit) && optionIndex <= -1) {
-              value.push(options[i].value);
-            }
-          }
-        } else {
-          for (let i = 0; i < options.length; i++) {
-            const optionIndex = this.getValueIndex(value, options[i].value);
-            if (optionIndex > -1) {
-              value.splice(optionIndex, 1);
-            }
-          }
-        }
-
-        this.$emit("input", value);
-        this.emitChange(value);
-        if (options.created) {
-          this.query = "";
-          // debugger;
-          this.handleQueryChange("");
-          this.inputLength = 20;
-        }
-        if (this.filterable) this.$refs.input.focus();
-      } else {
-        this.$emit("input", options.value);
-        this.emitChange(options.value);
-        this.visible = false;
-      }
-      // this.isSilentBlur = byClick;
-      this.setSoftFocus();
-      if (this.visible) return;
-      this.$nextTick(() => {
-        this.scrollToOption(options);
-      });
-    },
     setSoftFocus() {
       this.softFocus = true;
       const input = this.$refs.input || this.$refs.reference;
@@ -791,23 +762,29 @@ export default {
       }
     },
     getValueIndex(arr = [], value) {
-      const isObject = Object.prototype.toString.call(value).toLowerCase() === "[object object]";
+      debugger;
+      const isObject =
+        Object.prototype.toString.call(value).toLowerCase() ===
+        "[object object]";
       if (!isObject) {
         return arr.indexOf(value);
+      } else {
+        const valueKey = this.valueKey;
+        let index = -1;
+        arr.some((item, i) => {
+          if (
+            getValueByPath(item, valueKey) === getValueByPath(value, valueKey)
+          ) {
+            index = i;
+            return true;
+          }
+          return false;
+        });
+        return index;
       }
-      const valueKey = this.valueKey;
-      let index = -1;
-      arr.some((item, i) => {
-        if (getValueByPath(item, valueKey) === getValueByPath(value, valueKey)) {
-          index = i;
-          return true;
-        }
-        return false;
-      });
-      return index;
     },
     toggleMenu() {
-      debugger
+      debugger;
       if (!this.selectDisabled) {
         if (this.menuVisibleOnFocus) {
           this.menuVisibleOnFocus = false;
@@ -819,26 +796,28 @@ export default {
         }
       }
     },
-    // 针对 enter 时间
     selectOption() {
       debugger;
       if (!this.visible) {
         this.toggleMenu();
-      } else if (this.options[this.hoverIndex]) {
-        this.handleOptionSelect(this.options[this.hoverIndex]);
+      } else {
+        if (this.options[this.hoverIndex]) {
+          this.handleOptionSelect(this.options[this.hoverIndex]);
+        }
       }
     },
     deleteSelected(event) {
+      debugger;
       event.stopPropagation();
-      const value = this.multiple ? [] : "";
+      const value = this.multiple ? [] : null;
       this.$emit("input", value);
       this.emitChange(value);
       this.visible = false;
       this.$emit("clear");
     },
     deleteTag(event, tag) {
-      debugger
-      const index = this.selected.indexOf(tag);
+      debugger;
+      let index = this.selected.indexOf(tag);
       if (index > -1 && !this.selectDisabled) {
         const value = this.value.slice();
         value.splice(index, 1);
@@ -848,9 +827,7 @@ export default {
       }
       event.stopPropagation();
     },
-
     onInputChange() {
-      // debugger;
       if (this.filterable && this.query !== this.selectedLabel) {
         this.query = this.selectedLabel;
         this.handleQueryChange(this.query);
@@ -863,7 +840,6 @@ export default {
         this.options.splice(index, 1);
       }
     },
-    // 拿到最基本input的宽度
     resetInputWidth() {
       this.inputWidth = this.$refs.reference.$el.getBoundingClientRect().width;
     },
@@ -872,6 +848,7 @@ export default {
       if (this.multiple) this.resetInputHeight();
     },
     checkDefaultFirstOption() {
+      debugger;
       this.hoverIndex = -1;
       // highlight the created option
       let hasCreated = false;
@@ -901,50 +878,46 @@ export default {
       }
     },
     getValueKey(item) {
-      if (Object.prototype.toString.call(item.value).toLowerCase() !== "[object object]") {
+      debugger;
+      if (
+        Object.prototype.toString.call(item.value).toLowerCase() !==
+        "[object object]"
+      ) {
         return item.value;
+      } else {
+        return getValueByPath(item.value, this.valueKey);
       }
-      return getValueByPath(item.value, this.valueKey);
-    },
-    fillTooltip() {
-      // debugger;
-      // this.$nextTick(() => {
-
-      if (this.$refs.tooltip && this.$refs.tags) {
-        // debugger;
-        this.$refs.tooltip.innerHTML = this.$refs.tags.innerHTML;
-      }
-
-      // });
     }
   },
   created() {
-    // debugger;
+    debugger;
+    // 设置placeholder
     this.cachedPlaceHolder = this.currentPlaceholder = this.placeholder;
-    // 处理多选默认值不是数组 单选默认值是数组的情况
+    // 下面两个if规范单选模式和多选模式的传入的value
     if (this.multiple && !Array.isArray(this.value)) {
       this.$emit("input", []);
     }
     if (!this.multiple && Array.isArray(this.value)) {
       this.$emit("input", "");
     }
-    // 如果是远程搜索模式 设置300ms的延迟
+    // 设置keyup和input事件的抖动延迟
     this.debouncedOnInputChange = debounce(this.debounce, () => {
       this.onInputChange();
     });
-    this.debouncedQueryChange = debounce(this.debounce, (e) => {
+    this.debouncedQueryChange = debounce(this.debounce, e => {
       this.handleQueryChange(e.target.value);
     });
+    // 监听当前实例上的handleOptionClick和setSelected事件（自定义事件）
+    // 目的是为了让el-option组件触发
     this.$on("handleOptionClick", this.handleOptionSelect);
     this.$on("setSelected", this.setSelected);
   },
   mounted() {
-    // debugger;
+    debugger;
     if (this.multiple && Array.isArray(this.value) && this.value.length > 0) {
       this.currentPlaceholder = "";
     }
     addResizeListener(this.$el, this.handleResize);
-    // 最基本的那个输入框
     const reference = this.$refs.reference;
     if (reference && reference.$el) {
       const sizeMap = {
@@ -952,9 +925,9 @@ export default {
         small: 32,
         mini: 28
       };
-      this.initialInputHeight = reference.$el.getBoundingClientRect().height || sizeMap[this.selectSize];
-      // console.log(this.initialInputHeight, '高度');
-      // this.resetInputHeight();
+      this.initialInputHeight =
+        reference.$el.getBoundingClientRect().height ||
+        sizeMap[this.selectSize];
     }
     if (this.remote && this.multiple) {
       this.resetInputHeight();
@@ -965,49 +938,10 @@ export default {
       }
     });
     this.setSelected();
-    this.$nextTick(() => {
-      this.fillTooltip();
-    });
   },
   beforeDestroy() {
-    if (this.$el && this.handleResize) removeResizeListener(this.$el, this.handleResize);
+    if (this.$el && this.handleResize)
+      removeResizeListener(this.$el, this.handleResize);
   }
 };
 </script>
-<style lang="scss" scoped>
-.filterBox{
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  border-bottom: 1px solid #f5f7fa;
-
-  &>input{
-    height:100%;
-    margin-left: 0;
-    flex: 1;
-    padding: 0 4px;
-  }
-  i{
-    padding: 6px;
-    background-color: #f5f7fa;
-  }
-}
-</style>
-
-<style lang="scss">
-.el-select-holy{
-  overflow: hidden;
-  .el-select__tags{
-    flex-wrap: nowrap;
-    overflow-x: hidden;
-    margin: 0 4px;
-    &:hover{
-      overflow-x: auto;
-       &::-webkit-scrollbar {
-        height: 0px;
-      }
-    }
-   
-  }
-}
-</style>

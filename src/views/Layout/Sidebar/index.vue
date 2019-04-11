@@ -34,8 +34,6 @@ import SubMenu from "./subMenu";
 export default {
   data() {
     return {
-      // openKeys: [this.breadCrumb[0]],
-      // selectedKeys: [this.breadCrumb[this.breadCrumb.length - 1]],
       directory,
       collapsed: false
     };
@@ -52,11 +50,10 @@ export default {
     selectedKeys() {
       const { path } = this.$route;
       const breadCrumb = path.split("/");
-      return breadCrumb[breadCrumb.length - 1];
+      return [breadCrumb[breadCrumb.length - 1]];
     }
   },
   components: { SubMenu },
-  created() {},
   methods: {
     handleClick() {},
     titleClick({ key, domEvent }) {
