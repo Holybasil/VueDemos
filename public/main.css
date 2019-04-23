@@ -6,3 +6,6 @@ body {
   width: 100vw;
   height: 100vh;
 }
+.ant-menu .ant-menu-submenu > .ant-menu{
+  background-color: rgb(255,230,188);
+}
