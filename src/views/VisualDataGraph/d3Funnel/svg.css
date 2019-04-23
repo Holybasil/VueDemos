@@ -1,0 +1,15 @@
+rect:hover {
+  /* stroke: "#000"; */
+  /* stroke-width: 3px; */
+  fill-opacity: 0.8;
+  cursor: pointer;
+  /* border: 1px solid red; */
+}
+g:hover text {
+  fill: #fff;
+  
+  font-size: 14px;
+}
+text{
+  pointer-events: none;
+}

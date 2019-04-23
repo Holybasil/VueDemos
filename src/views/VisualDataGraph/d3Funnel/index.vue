@@ -1,6 +1,9 @@
 <template>
-  <div class="container" ref="container">
-    <!-- <svg></svg> -->
+  <div>
+    <div class="container" ref="container">
+      <!-- <svg></svg> -->
+    </div>
+    <div>{{ path }}</div>
   </div>
 </template>
 
@@ -8,6 +11,11 @@
 import * as d3 from "d3";
 import data from "./data";
 export default {
+  data() {
+    return {
+      path: ""
+    };
+  },
   mounted() {
     this.init();
     window.addEventListener("resize", () => {
@@ -88,7 +96,16 @@ export default {
             d.data.color || "#eee"
         )
         .on("click", d => {
-          console.log(d, "ddd");
+          let node = d;
+          let path = [node.data];
+          while (node.parent) {
+            node = node.parent;
+            path.push(node.data);
+          }
+          this.path = path
+            .reverse()
+            .map(item => item.name)
+            .join("->");
         });
 
       const text = cell
@@ -120,6 +137,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "./svg.css";
 .container {
   width: 100%;
   height: 500px;
