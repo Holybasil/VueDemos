@@ -2,6 +2,8 @@ const introduce = () => import("@/views/Overview/introduce");
 const elementuiSelect = () => import("@/views/Components/elementuiSelect");
 const elementTree = () => import("@/views/Components/elementTree");
 const numberPrecision = () => import("@/views/Components/numberPrecision");
+const treeSelect = () => import("@/views/Components/treeSelect");
+
 const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
 
 export default [
@@ -29,6 +31,11 @@ export default [
         name: "numberPrecision",
         path: "/components/numberPrecision",
         component: numberPrecision
+      },
+      {
+        name: "treeSelect",
+        path: "/components/treeSelect",
+        component: treeSelect
       }
     ]
   },

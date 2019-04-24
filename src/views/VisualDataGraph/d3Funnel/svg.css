@@ -5,7 +5,7 @@ rect:hover {
   cursor: pointer;
   /* border: 1px solid red; */
 }
-g:hover text {
+rect:hover text {
   fill: #fff;
   
   font-size: 14px;

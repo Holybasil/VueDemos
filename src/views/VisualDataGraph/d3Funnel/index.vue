@@ -13,13 +13,24 @@ import data from "./data";
 export default {
   data() {
     return {
-      path: ""
+      path: "",
+      svg: null
     };
   },
   mounted() {
     this.init();
     window.addEventListener("resize", () => {
-      this.init;
+      // this.width = this.$refs.container.offsetWidth;
+      // this.height = this.$refs.container.offsetHeight;
+      // // this.xScale = d3.scaleLinear().range([0, this.width]);
+      // // this.yScale = d3.scaleLinear().range([0, this.height]);
+      // console.log(this.width, this.height, "resize");
+      // this.svg
+      //   .transition()
+      //   .duration(750)
+      //   .attr("transform", function(d) {
+      //     return this.width + "";
+      //   });
     });
   },
   methods: {
@@ -27,7 +38,10 @@ export default {
       window.d3 = d3;
       // 限制svg的宽高
       const width = this.$refs.container.offsetWidth;
-      const height = 500;
+      const height = this.$refs.container.offsetHeight;
+      const xScale = d3.scaleLinear().range([0, width]);
+      const yScale = d3.scaleLinear().range([0, height]);
+      console.log(xScale, yScale, "xScale yScale");
       // 限定数据展示格式 千位逗号符和对number toString
       const format = d3.format(",d");
       // scaleOrdinal 序数比例尺
@@ -55,7 +69,7 @@ export default {
             .sort((a, b) => b.height - a.height || b.value - a.value)
         );
       const root = partition(data);
-      console.log(root, "root");
+      console.log(root, "tree data");
       console.log(
         d3
           .partition()
@@ -68,17 +82,28 @@ export default {
         .append("svg")
         .attr("width", "100%")
         .attr("height", "100%");
+
       const svg = svgo.style("font", "10px sans-serif");
-      console.log(root.descendants(), "拓扑节点");
+      this.svg = svg;
+      console.log(root.descendants(), "tree data-> array data");
       const cell = svg
         .selectAll("g")
+        .attr("transform", `translateX(${width / 2}`)
         .data(root.descendants())
-        .join("g")
-        .attr("transform", d => `translate(${d.y0},${d.x0})`);
+        .join("g");
+      // .attr("transform", d => `translate(${d.y0},${d.x0})`);
       console.log(cell, "g cell");
       // debugger;
       cell
         .append("rect")
+        .attr("x", function(d) {
+          // return d.y0 + ((d.y1 - d.y0) / width) * (d.y1 - d.y0);
+          return d.y0;
+        })
+        .attr("y", function(d) {
+          return d.x0;
+        })
+        // .attr("position", "relative")
         .attr("width", d => d.y1 - d.y0)
         .attr("height", d => d.x1 - d.x0)
         .attr("fill-opacity", 0.6)
@@ -95,24 +120,64 @@ export default {
             // }
             d.data.color || "#eee"
         )
-        .on("click", d => {
-          let node = d;
-          let path = [node.data];
-          while (node.parent) {
-            node = node.parent;
-            path.push(node.data);
-          }
-          this.path = path
-            .reverse()
-            .map(item => item.name)
-            .join("->");
-        });
+        .on("click", zoom);
+      function getPath(d) {
+        let node = d;
+        let path = [node.data];
+        while (node.parent) {
+          node = node.parent;
+          path.push(node.data);
+        }
+        this.path = path
+          .reverse()
+          .map(item => item.name)
+          .join("->");
+      }
+      var rect = svg.selectAll("rect");
 
+      function zoom(d) {
+        xScale.domain([d.y0, width]).range([d.depth ? 20 : 0, width]);
+        yScale.domain([d.x0, d.x1]);
+
+        rect
+          .transition()
+          .duration(750)
+          .attr("x", function(d) {
+            return xScale(d.y0);
+          })
+          .attr("y", function(d) {
+            return yScale(d.x0);
+          })
+          .attr("width", function(d) {
+            return xScale(d.y1) - xScale(d.y0);
+          })
+          .attr("height", function(d) {
+            return yScale(d.x1) - yScale(d.x0);
+          });
+        text
+          .transition()
+          .duration(750)
+          .attr("x", function(d) {
+            return xScale(d.y0 + 4);
+          })
+          .attr("y", function(d) {
+            return yScale(d.x0 + 13);
+          });
+      }
       const text = cell
         .filter(d => d.x1 - d.x0 > 16)
         .append("text")
-        .attr("x", 4)
-        .attr("y", 13);
+        .attr("x", function(d) {
+          return d.y0 + 4;
+        })
+        .attr("y", function(d) {
+          return d.x0 + 13;
+        });
+      // .attr("x", 4)
+      // .attr("y", 13);
+      var textG = svg.selectAll("text");
+      console.log(textG, "假text");
+      console.log(text, "真实text");
 
       text.append("tspan").text(d => d.data.name);
 
@@ -121,7 +186,7 @@ export default {
         .attr("fill-opacity", 0.7)
         .text(d => ` ${format(d.value)}`);
 
-      cell.append("title").text(
+      text.append("title").text(
         d =>
           `${d
             .ancestors()
