@@ -5,6 +5,8 @@ const numberPrecision = () => import("@/views/Components/numberPrecision");
 const treeSelect = () => import("@/views/Components/treeSelect");
 
 const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
+// jsDetail-jsonEditor
+const jsonEditor = () => import("@/views/jsDetail/jsonEditor");
 
 export default [
   {
@@ -47,6 +49,17 @@ export default [
         name: "d3Funnel",
         path: "/visualDataGraph/d3Funnel",
         component: d3Funnel
+      }
+    ]
+  },
+  {
+    name: "jsDetail",
+    icon: "project",
+    children: [
+      {
+        name: "jsonEditor",
+        path: "/jsDetail/jsonEditor",
+        component: jsonEditor
       }
     ]
   }
