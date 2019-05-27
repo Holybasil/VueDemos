@@ -7,6 +7,7 @@ const treeSelect = () => import("@/views/Components/treeSelect");
 const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
 // jsDetail-jsonEditor
 const jsonEditor = () => import("@/views/jsDetail/jsonEditor");
+const jsonValidate = () => import("@/views/jsDetail/jsonValidate");
 
 export default [
   {
@@ -60,6 +61,11 @@ export default [
         name: "jsonEditor",
         path: "/jsDetail/jsonEditor",
         component: jsonEditor
+      },
+      {
+        name: "jsonValidate",
+        path: "/jsDetail/jsonValidate",
+        component: jsonValidate
       }
     ]
   }

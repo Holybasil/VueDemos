@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@riophae/vue-treeselect": "0.0.38",
+    "ajv": "^6.10.0",
     "ant-design-vue": "^1.3.5",
     "babel-plugin-transform-vue-jsx": "^3.7.0",
     "core-js": "^2.6.5",
