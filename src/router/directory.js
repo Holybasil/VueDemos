@@ -3,6 +3,8 @@ const elementuiSelect = () => import("@/views/Components/elementuiSelect");
 const elementTree = () => import("@/views/Components/elementTree");
 const numberPrecision = () => import("@/views/Components/numberPrecision");
 const treeSelect = () => import("@/views/Components/treeSelect");
+const listSelect = () => import("@/views/Components/listSelect");
+const clickoutside = () => import("@/views/Components/clickoutside");
 
 const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
 // jsDetail-jsonEditor
@@ -39,6 +41,16 @@ export default [
         name: "treeSelect",
         path: "/components/treeSelect",
         component: treeSelect
+      },
+      {
+        name: "listSelect",
+        path: "/components/listSelect",
+        component: listSelect
+      },
+      {
+        name: "clickoutside",
+        path: "/components/clickoutside",
+        component: clickoutside
       }
     ]
   },
