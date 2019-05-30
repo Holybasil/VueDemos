@@ -39,9 +39,9 @@
 </template>
 
 <script>
-// import Clickoutside from "element-ui/src/utils/clickoutside";
+import "holy-components";
 import Clickoutside from "./clickoutside";
-import HolyClickoutside from "./holyClickoutside";
+// import HolyClickoutside from "./holyClickoutside";
 export default {
   data() {
     return {
@@ -49,7 +49,7 @@ export default {
     };
   },
   directives: { Clickoutside },
-  components: { HolyClickoutside },
+  // components: { HolyClickoutside },
   methods: {
     handleClickoutside() {
       alert("处理我");
