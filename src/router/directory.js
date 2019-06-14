@@ -11,6 +11,9 @@ const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
 const jsonEditor = () => import("@/views/jsDetail/jsonEditor");
 const jsonValidate = () => import("@/views/jsDetail/jsonValidate");
 
+// css 有趣的特性
+const selector = () => import("@/views/cssCharacter/selector");
+
 export default [
   {
     name: "overview",
@@ -62,6 +65,17 @@ export default [
         name: "d3Funnel",
         path: "/visualDataGraph/d3Funnel",
         component: d3Funnel
+      }
+    ]
+  },
+  {
+    name: "cssCharacter",
+    icon: "project",
+    children: [
+      {
+        name: "selector",
+        path: "/cssCharacter/selector",
+        component: selector
       }
     ]
   },
