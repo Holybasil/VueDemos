@@ -39,16 +39,20 @@
 </template>
 
 <script>
-import "holy-components";
-import Clickoutside from "./clickoutside";
+// import Clickoutside from "./clickoutside";
 // import HolyClickoutside from "./holyClickoutside";
+import { a } from "./module";
+// const { a } = require("./module");
 export default {
   data() {
     return {
       holy: "left"
     };
   },
-  directives: { Clickoutside },
+  created() {
+    console.log(a, "module");
+  },
+  // directives: { Clickoutside },
   // components: { HolyClickoutside },
   methods: {
     handleClickoutside() {

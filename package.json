@@ -15,7 +15,7 @@
     "core-js": "^2.6.5",
     "d3": "^5.9.2",
     "element-ui": "^2.7.2",
-    "holy-components": "^0.1.0",
+    "holy-components": "^0.1.10",
     "jsoneditor": "^5.32.5",
     "number-precision": "^1.3.1",
     "vue": "^2.6.6",
@@ -23,11 +23,13 @@
     "vuex": "^3.0.1"
   },
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.5.0",
     "@vue/cli-plugin-babel": "^3.5.0",
     "@vue/cli-plugin-eslint": "^3.5.0",
     "@vue/cli-service": "^3.5.0",
     "@vue/eslint-config-prettier": "^4.0.1",
     "babel-eslint": "^10.0.1",
+    "babel-plugin-add-module-exports": "^1.0.2",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0",
     "less": "^3.9.0",
