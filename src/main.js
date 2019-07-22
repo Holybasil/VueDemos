@@ -2,9 +2,10 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import { HolyClickoutside } from "holy-components";
+// import { HolyClickoutside } from "holy-components";
 // const { HolyClickoutside } = require("holy-components");
-// import HolyComponents from "holy-components";
+import HolyComponents from "holy-components";
+import "holy-components/dist/holycomponents.css";
 import AntdDesignVue from "ant-design-vue";
 import "ant-design-vue/dist/antd.less";
 import ElementUI from "element-ui";
@@ -16,10 +17,10 @@ Vue.use(ElementUI);
 // console.log(HolyComponents, "holy");
 // const { HolyClickoutside } = HolyComponents;
 // console.log(HolyClickoutside, "holy");
-Vue.component(HolyClickoutside.name, HolyClickoutside);
+// Vue.component(HolyClickoutside.name, HolyClickoutside);
 // console.log(ElementUI, Button, "element");
 Vue.component(Button.name, Button);
-// Vue.use(HolyComponents);
+Vue.use(HolyComponents);
 Vue.config.productionTip = false;
 
 new Vue({

@@ -5,6 +5,7 @@ const numberPrecision = () => import("@/views/Components/numberPrecision");
 const treeSelect = () => import("@/views/Components/treeSelect");
 const listSelect = () => import("@/views/Components/listSelect");
 const clickoutside = () => import("@/views/Components/clickoutside");
+const transfer = () => import("@/views/Components/transfer");
 
 const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
 // jsDetail-jsonEditor
@@ -54,6 +55,11 @@ export default [
         name: "clickoutside",
         path: "/components/clickoutside",
         component: clickoutside
+      },
+      {
+        name: "transfer",
+        path: "/components/transfer",
+        component: transfer
       }
     ]
   },
