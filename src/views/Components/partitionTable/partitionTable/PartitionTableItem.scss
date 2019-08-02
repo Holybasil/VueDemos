@@ -1,0 +1,16 @@
+// $max: Number.MAX_SAFE_INTEGER
+.partitionTableItem{
+  .textItem{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+  }
+  .item{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    // grid-auto-rows: 1fr;
+    span{
+      grid-row: 1 / span 6;
+    }
+  }
+}

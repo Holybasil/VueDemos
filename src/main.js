@@ -27,4 +27,15 @@ new Vue({
   router,
   store,
   render: h => h(App)
+  // render(createElement) {
+  //   return createElement(
+  //     "div",
+  //     {
+  //       attrs: {
+  //         id: "divv"
+  //       }
+  //     },
+  //     "有钱哥哥"
+  //   );
+  // }
 }).$mount("#app");
