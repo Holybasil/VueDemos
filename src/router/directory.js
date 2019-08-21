@@ -6,6 +6,7 @@ const treeSelect = () => import("@/views/Components/treeSelect");
 const listSelect = () => import("@/views/Components/listSelect");
 const clickoutside = () => import("@/views/Components/clickoutside");
 const transfer = () => import("@/views/Components/transfer");
+const forceMap = () => import("@/views/Components/forceMap");
 
 const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
 // jsDetail-jsonEditor
@@ -60,6 +61,11 @@ export default [
         name: "transfer",
         path: "/components/transfer",
         component: transfer
+      },
+      {
+        name: "forceMap",
+        path: "/components/forceMap",
+        component: forceMap
       }
     ]
   },

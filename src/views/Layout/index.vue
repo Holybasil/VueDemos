@@ -3,16 +3,16 @@
     <Sidebar></Sidebar>
     <Navbar></Navbar>
     <div class="content">
-      <div id="contentScroll">
-        <transition name="move" mode="out-in">
-          <keep-alive :key="1">
-            <router-view v-if="$route.meta.keepAlive"></router-view>
-          </keep-alive>
-        </transition>
-        <transition name="move" mode="out-in">
-          <router-view :key="2" v-if="!$route.meta.keepAlive"></router-view>
-        </transition>
-      </div>
+      <!-- <div id="contentScroll"> -->
+      <transition name="move" mode="out-in">
+        <keep-alive :key="1">
+          <router-view v-if="$route.meta.keepAlive"></router-view>
+        </keep-alive>
+      </transition>
+      <transition name="move" mode="out-in">
+        <router-view :key="2" v-if="!$route.meta.keepAlive"></router-view>
+      </transition>
+      <!-- </div> -->
     </div>
   </main>
 </template>
@@ -38,6 +38,7 @@ main {
     grid-row: span 2;
   }
   .content {
+    box-sizing: border-box;
     padding: 0 10px 10px;
   }
 }
