@@ -66,9 +66,6 @@ export default {
         .attr("stroke-width", d => Math.sqrt(d.value))
         .attr("stroke", "#999");
 
-      console.log(link, "link");
-      debugger;
-      console.log(nodes, "nodes");
       // const image =
       // const link = this.svg
       //   .selectAll(".link")
@@ -81,73 +78,74 @@ export default {
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
         .selectAll("g.node")
-
         .data(nodes)
-        .enter()
+        .join("g")
         .append("g")
         .attr("class", "node")
-        // .attr("transform", d => {
-        //   console.log(d);
-        //   return "translate(" + d.x + ", " + d.y + ")";
-        // })
-        // .attr("r", 15)
-        // .selectAll(".node")
-        // .data(nodes)
-        // .enter()
-        // .append("g")
-        // .attr("class", "node")
-
         .call(drag(this.simulation));
-      // .attr("stroke", "#fff")
-      // .attr("stroke-width", 1.5)
-      // .selectAll("g")
-      // .selectAll("image")
-      // .selectAll("circle")
-      // .data(nodes)
-      // .join("g");
-      // .append("circle")
-      // .attr("r", 6)
-      // .attr("fill", color())
-      // .append("defs")
-      // .join("circle")
-      // .attr("r", 6)
-      // .attr("fill", color())
-      // .append("image")
-      // .attr(
-      //   "fill",
-      //   "url(http://5b0988e595225.cdn.sohucs.com/images/20190725/9af6a5c7aaad426a8926f7bd4a93f41a.jpeg)"
-      // )
-      // .attr(
-      //   "xlink:href",
-      //   "http://5b0988e595225.cdn.sohucs.com/images/20190725/9af6a5c7aaad426a8926f7bd4a93f41a.jpeg"
-      // )
-      // .attr("width", 30)
-      // .attr("height", 30)
-      // .attr("x", d => {
-      //   console.log(d);
-      //   return d.y;
-      // })
-      // .attr("y", d => d.x)
-      // .call(drag(this.simulation));
-      node.attr("transform", function(d) {
-        return "translate(" + d.x + "," + d.y + ")";
-      });
-      node
-        .append("circle")
-        .attr("r", 15)
-        // .attr("y", -16)
-        .attr("width", 30)
-        .attr("height", 30);
-      node
+      console.log(node, "node");
+
+      // const pattern = d3
+      //   .create("defs")
+      //   .append("pattern")
+      //   .attr("patternUnits", "userSpaceOnUse")
+      //   .attr("height", "30")
+      //   .attr("width", 30);
+      // const image = pattern
+      //   .append("image")
+      //   .attr(
+      //     "xlink:href",
+      //     "http://5b0988e595225.cdn.sohucs.com/images/20190725/9af6a5c7aaad426a8926f7bd4a93f41a.jpeg"
+      //   )
+      //   .attr("x", -15)
+      //   .attr("y", -15)
+      //   .attr("width", 30)
+      //   .attr("height", 30);
+      const defs = node
+        // .selectAll("defs")
+        // .data()
+        // .enter()
+        .append("defs");
+      // .append("");
+      const pattern = defs
+        .append("pattern")
+        .attr("id", "image")
+        .attr("patternUnits", "userSpaceOnUse")
+        .attr("x", "0")
+        .attr("y", "0")
+        .attr("height", "30")
+        .attr("width", "30");
+
+      pattern
         .append("image")
         .attr(
           "xlink:href",
           "http://5b0988e595225.cdn.sohucs.com/images/20190725/9af6a5c7aaad426a8926f7bd4a93f41a.jpeg"
         )
-        .attr("x", -15)
-        .attr("y", -15)
+        // .attr("x", -15)
+        // .attr("y", -15)
+        .attr("x", "0")
+        .attr("y", "0")
+        .attr("width", "30")
+        .attr("height", "30");
+      node
+        .append("circle")
+        .attr("r", 15)
+        .attr("cx", 15)
+        .attr("cy", 15)
         .attr("width", 30)
-        .attr("height", 30);
+        .attr("height", 30)
+        .attr("fill", "url(#image)");
+      // node
+      //   .append("image")
+      //   .attr(
+      //     "xlink:href",
+      //     "http://5b0988e595225.cdn.sohucs.com/images/20190725/9af6a5c7aaad426a8926f7bd4a93f41a.jpeg"
+      //   )
+      //   .attr("x", -15)
+      //   .attr("y", -15)
+      //   .attr("width", 30)
+      //   .attr("height", 30);
 
       // node
       //   .append("text")
