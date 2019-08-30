@@ -1,6 +1,32 @@
 <template>
   <!-- <div class="forceMap"> -->
-  <div class="forceMap" ref="forceMap"></div>
+  <div class="forceMapPage">
+    <div class="forceMap" ref="forceMap"></div>
+    <div class="panel" v-show="isPanelShow">
+      <div class="name">
+        <span>{{ property.name || "???" }}</span>
+        <span class="close" @click="isPanelShow = false">X</span>
+      </div>
+      <div class="content">
+        <div>
+          <span>身份证号：</span><span>{{ property.idCard }}</span>
+        </div>
+        <div>
+          <span>手机号：</span><span>{{ property.phone }}</span>
+        </div>
+        <div>
+          <span>邮箱：</span><span>{{ property.email }}</span>
+        </div>
+        <div>
+          <span>首次时间：</span><span>{{ property.timestamp }}</span>
+        </div>
+        <div>
+          <span>关联进件号：</span><span>{{ property.loanIds }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- </div> -->
 </template>
 
@@ -14,7 +40,9 @@ import HolyNeo4j from "./holyNeo4j";
 export default {
   data() {
     return {
-      svg: null
+      svg: null,
+      isPanelShow: false,
+      property: {}
     };
   },
   created() {
@@ -23,21 +51,23 @@ export default {
   async mounted() {
     const res = await this.$axios.post(
       // "/data.json"
-      "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/queryForceMap"
+      "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getForceMapOther"
     );
     // console.log(data, "eee");
     data = res.data.data;
     // this.createForceMap();
-    this.svg = new HolyNeo4j(".forceMap", { 
+    this.svg = new HolyNeo4j(".forceMap", {
       data,
-      onNodeClick(d){
+      onNodeClick: d => {
         console.log(d);
+        if (!this.isPanelShow) {
+          this.isPanelShow = true;
+        }
+        this.property = { ...d.properties };
       },
-      onNodeDBClick(d){
+      onNodeDBClick(d) {
         console.log(d);
       }
-
-    
     });
     // d3.select(window).on("resize", this.updateWindow);
   },
@@ -305,33 +335,43 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.forceMapPage,
 .forceMap {
   width: 100%;
   height: 100%;
 }
-.image {
-  // transition: popUp 0.8s ease;
-  animation: popUp 0.8s ease;
-}
-.node text {
-  fill: #333;
-  font-size: 14px;
-}
-.selected text {
-  fill: #f00;
-}
-@keyframes popUp {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  // 10% {
-  //   transform: translate(-1, -1) scale(1);
-  // }
-  80% {
-    transform: translate(-4, -4) scale(1.6);
-  }
-  100% {
-    transform: translate(-5, -5) scale(1.5);
+
+.forceMapPage {
+  position: relative;
+  .panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 30%;
+    // height: 50%;
+    padding: 10px;
+    // background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    color: #333;
+    .name {
+      // line-height: 2em;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      line-height: 2em;
+      justify-content: space-between;
+      .close {
+        cursor: pointer;
+      }
+    }
+    .content {
+      pointer-events: none;
+      div {
+        line-height: 1.8em;
+      }
+    }
   }
 }
 </style>

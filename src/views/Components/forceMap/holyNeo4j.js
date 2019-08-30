@@ -2,10 +2,12 @@ import * as d3 from "d3";
 class holyNeo4j {
   constructor(selector, options = {}) {
     this.svg = null;
-    this.nodes = null; // svg
-    this.links = null;
-    this.svgNodes = null;
-    this.svgLinks = null;
+    this.nodes = []; // 数据
+    this.links = []; // 数据
+    this.node = null; // g.node 数组
+    this.link = null; // g.link 数组
+    this.nodeSvg = null;
+    this.linkSvg = null;
     this.myLink = null;
     this.options = {
       arrowSize: 4,
@@ -27,8 +29,10 @@ class holyNeo4j {
     this.mergeOption(options);
     this.appendSVGGraph(selector);
     this.initSimulation();
-    this.updateNode();
-    this.updateLink();
+    // this.updateNode();
+    // this.updateLink();
+    this.loadData();
+    // this.updateNodeAndLink(this.options.data.graph);
     // this.initSimulation();
     // .force("x", d3.forceX())
     // .force("y", d3.forceY());
@@ -61,27 +65,26 @@ class holyNeo4j {
   }
   initSimulation() {
     this.simulation = d3
-      .forceSimulation(this.nodes)
-      .force(
-        "link",
-        d3
-          .forceLink(this.links)
-          .id(d => d[this.options.linkKey])
-          .distance(function() {
-            return 200;
-          })
-      )
+      .forceSimulation()
+      // .forceSimulation(this.nodes)
+      // .force(
+      //   "link",
+      //   d3
+      //     .forceLink(this.links)
+      //     .id(d => d[this.options.linkKey])
+      //     .distance(function() {
+      //       return 200;
+      //     })
+      // )
 
       .force("charge", d3.forceManyBody())
       .on("tick", () => {
         this.tickNode();
         this.tickLink();
-      })
+      });
   }
   appendNode() {
-    return this.nodeSvg
-      .selectAll("g.node")
-      .data(this.nodes)
+    return this.node
       .join("g")
       .attr("class", "node")
       .on("click", d => {
@@ -117,6 +120,7 @@ class holyNeo4j {
   appendTextToNode(node) {
     node
       .append("text")
+      // .attr("class", 'text')
       .attr("text-anchor", "middle")
       .attr("font-size", this.options.nodeTextSize)
       .attr("fill", this.options.nodeTextColor)
@@ -126,29 +130,22 @@ class holyNeo4j {
         return d[this.options.nodeTextKey];
       });
   }
-  updateNode() {
+  appendNodeGroup() {
     const node = this.appendNode();
     this.appendCircleToNode(node);
     this.appendTextToNode(node);
+    return node;
   }
   appendLink() {
-    return this.linkSvg
-      .selectAll("g.link")
-      .data(this.links)
-      .join("g")
+    // debugger;
+    return this.link
+      .enter()
+      .append("g")
       .attr("class", "link");
-    // .attr("stroke-width", d => Math.sqrt(d.value))
-    // .attr("stroke", "#999")
   }
-  // appendOutlineToLink(link) {
-  //   return link
-  //     .append("path")
-  //     .attr("class", "outline")
-  //     .attr("fill", "#a5abb6")
-  //     .attr("stroke", "none");
-  // }
   appendTextToLink(link) {
-    link
+    debugger;
+    return link
       .append("text")
       .attr("class", "text")
       .attr("fill", "#000000")
@@ -156,13 +153,13 @@ class holyNeo4j {
       .attr("pointer-events", "none")
       .attr("text-anchor", "middle")
       .text(d => {
-        return this.options.linkTextMap ? 
-        this.options.linkTextMap[d[this.options.linkTextKey]] 
-        : d[this.options.linkTextKey];
+        return this.options.linkTextMap
+          ? this.options.linkTextMap[d[this.options.linkTextKey]]
+          : d[this.options.linkTextKey];
       });
   }
   appendLineToLink(link) {
-    this.path = link
+    return link
       .append("path")
       .attr("class", "path")
       .attr("fill", "#a5abb6")
@@ -170,13 +167,68 @@ class holyNeo4j {
     // this.myLink = link.append("line").attr("stroke", "#999");
     // .attr("marker-mid", "url(#head)");
   }
-  updateLink() {
+  appendLinkGroup() {
+    debugger;
     const link = this.appendLink();
-    console.log(link, "mylink");
     // const relationship = appendRelationship(),
-    this.appendTextToLink(link);
-    this.appendLineToLink(link);
+    const linkText = this.appendTextToLink(link);
+    const linkPath = this.appendLineToLink(link);
+    return {
+      link,
+      linkText,
+      linkPath
+    };
     // this.appendLineToLink(link);
+  }
+  updateNodes(nodes) {
+    this.nodes.push(...nodes);
+    this.node = this.nodeSvg
+      .selectAll("g.node")
+      .data(this.nodes, d => d[this.options.linkKey]);
+    const nodeSet = this.appendNodeGroup();
+    this.node = nodeSet.merge(this.node);
+  }
+  loadData() {
+    debugger;
+    this.nodes = this.options.data.graph.nodes.map(d => Object.create(d));
+    this.links = this.options.data.graph.relationships
+      .filter(d => {
+        return d.source !== d.target;
+      })
+      .map(d => Object.create(d));
+    this.updateNodeAndLink(this.nodes, this.links);
+  }
+  updateNodeAndLink(nodes, links) {
+    debugger;
+    this.updateNodes(nodes);
+    this.updateLinks(links);
+
+    this.simulation.nodes(nodes);
+    this.simulation.force(
+      "link",
+      d3
+        .forceLink(links)
+        .id(d => d[this.options.linkKey])
+        .distance(function() {
+          return 200;
+        })
+    );
+  }
+  updateLinks(links) {
+    debugger;
+    // 增量的数据加入到数据集中
+    this.links.push(...links);
+    // 用数据集创建svg link的一个group
+    this.link = this.linkSvg
+      .selectAll("g.link")
+      .data(this.links, d => d[this.options.linkKey]);
+    //
+    const linkSet = this.appendLinkGroup();
+    this.link = linkSet.link.merge(this.link);
+    this.linkPath = this.linkSvg.selectAll(".path");
+    this.linkPath = linkSet.linkPath.merge(this.linkPath);
+    this.linkText = this.linkSvg.selectAll(".text");
+    this.linkText = linkSet.linkText.merge(this.linkText);
   }
   // 固定node的位置
   stickNode(d) {
