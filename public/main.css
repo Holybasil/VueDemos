@@ -5,6 +5,7 @@
 body {
   width: 100vw;
   height: 100vh;
+  line-height: unset !important;
 }
 .ant-menu .ant-menu-submenu > .ant-menu{
   background-color: rgb(255,230,188);

@@ -5,11 +5,12 @@
 </template>
 
 <script>
-// let data;
+let data;
 // nodes中的group 是为了表示哪些node属于一个颜色
 // link中的value 是为了表示连线的粗细
-import data from "./data";
+// import data from "./data";
 import * as d3 from "d3";
+import HolyNeo4j from "./holyNeo4j";
 export default {
   data() {
     return {
@@ -17,14 +18,27 @@ export default {
     };
   },
   created() {
-    console.log(data);
+    // console.log(data);
   },
   async mounted() {
-    // data = await d3.json(
-    //   // "/data.json"
-    //   "https://gist.githubusercontent.com/mbostock/4062045/raw/5916d145c8c048a6e3086915a6be464467391c62/miserables.json"
-    // );
-    this.createForceMap();
+    const res = await this.$axios.post(
+      // "/data.json"
+      "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/queryForceMap"
+    );
+    // console.log(data, "eee");
+    data = res.data.data;
+    // this.createForceMap();
+    this.svg = new HolyNeo4j(".forceMap", { 
+      data,
+      onNodeClick(d){
+        console.log(d);
+      },
+      onNodeDBClick(d){
+        console.log(d);
+      }
+
+    
+    });
     // d3.select(window).on("resize", this.updateWindow);
   },
   methods: {
@@ -38,53 +52,119 @@ export default {
     createForceMap() {
       const width = this.$refs.forceMap.offsetWidth;
       const height = this.$refs.forceMap.offsetHeight;
-      const links = data.links.map(d => Object.create(d));
-      const nodes = data.nodes.map(d => Object.create(d));
+      // const links = data.graph.relationships;
+      // const nodes = data.graph.nodes;
+      const links = data.graph.relationships.map(d => Object.create(d));
+      const nodes = data.graph.nodes.map(d => Object.create(d));
       // const nodes = data.nodes;
-      debugger;
-      console.log(nodes, " data nodes");
-      console.log(d3.forceSimulation(nodes), "forceSimulation");
+      // debugger;
+      // console.log(nodes, " data nodes");
+      // console.log(d3.forceSimulation(nodes), "forceSimulation");
       this.simulation = d3
         .forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id))
+        .force(
+          "link",
+          d3
+            .forceLink(links)
+            .id(d => d.id)
+            .distance(function() {
+              return 200;
+            })
+          // .strength(link => {
+          //   return 1 / Math.max(d3.count(link.source), d3.count(link.target));
+          // })
+        )
+
         .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height / 2));
+        // .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("x", d3.forceX())
+        .force("y", d3.forceY());
 
       this.svg = d3
         .select(".forceMap")
         .append("svg")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
       const link = this.svg
         .append("g")
         .attr("stroke", "#999")
         .attr("stroke-opacity", 0.6)
-        .selectAll("line")
+        .selectAll("g.line")
         .data(links)
-        .join("line")
-        .attr("stroke-width", d => Math.sqrt(d.value))
+        .join("g")
+        .attr("class", "line")
+        // .attr("stroke-width", d => Math.sqrt(d.value))
         .attr("stroke", "#999");
 
-      // const image =
-      // const link = this.svg
-      //   .selectAll(".link")
-      //   .data(links)
-      //   .enter()
-      //   .append("line")
-      //   .attr("class", "link");
+      // new
+      // const linkDefs = link
+      //   // .selectAll("defs")
+      //   // .data()
+      //   // .enter()
+      //   .append("defs");
+
+      // const linkPattern = linkDefs
+      //   .append("marker")
+      //   .attr("id", "head")
+      //   .attr("linkDefs", "auto")
+      //   .attr("markerWidth", 2)
+      //   .attr("markerHeight", 4)
+      //   .attr("refX", "0.1")
+      //   .attr("refY", "2");
+
+      // linkPattern
+      //   .append("path")
+      //   .attr("d", "M 0 0 L 10 5 L 0 10 z")
+      //   // .attr("d", "M0,0 V4 L2,2 Z")
+      //   .attr("fill", "#f00");
+
+      const mylink = link
+        .append("line")
+        .attr("stroke", "#999")
+        .attr("marker-mid", "url(#head)");
+
       const node = this.svg
         .append("g")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1.5)
+        // .attr("stroke", "#fff")
+        // .attr("stroke-width", 1.5)
         .selectAll("g.node")
         .data(nodes)
         .join("g")
         .append("g")
         .attr("class", "node")
-        .call(drag(this.simulation));
-      console.log(node, "node");
+        .call(drag(this.simulation))
+        .on("mouseenter", d => {
+          // console.log(d.id, "mouseenter");
+          const aa = data.graph.relationships
+            .filter(link => {
+              return link.source === d.id || link.target === d.id;
+            })
+            .map(link => (link.source === d.id ? link.target : link.source));
+          // console.log(aa, "相关的节点");
+          d3.selectAll("g.node")
+            .filter(d => aa.includes(d.id))
+            .attr("class", "selected");
+        })
+        .on("mouseleave", d => {
+          const aa = data.graph.relationships
+            .filter(link => {
+              return link.source === d.id || link.target === d.id;
+            })
+            .map(link => (link.source === d.id ? link.target : link.source));
+          // console.log(aa, "相关的节点");
+          d3.selectAll("g.node")
+            .filter(d => aa.includes(d.id))
+            .attr("class", "node");
+        })
+        .on("dblclick", function(d) {
+          stickNode(d);
+        });
+      // console.log(node, "node");
 
+      function stickNode(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }
       // const pattern = d3
       //   .create("defs")
       //   .append("pattern")
@@ -111,8 +191,8 @@ export default {
         .append("pattern")
         .attr("id", "image")
         .attr("patternUnits", "userSpaceOnUse")
-        .attr("x", "0")
-        .attr("y", "0")
+        .attr("x", -15)
+        .attr("y", -15)
         .attr("height", "30")
         .attr("width", "30");
 
@@ -122,42 +202,58 @@ export default {
           "xlink:href",
           "http://5b0988e595225.cdn.sohucs.com/images/20190725/9af6a5c7aaad426a8926f7bd4a93f41a.jpeg"
         )
-        // .attr("x", -15)
-        // .attr("y", -15)
+
         .attr("x", "0")
         .attr("y", "0")
         .attr("width", "30")
         .attr("height", "30");
+
       node
         .append("circle")
         .attr("r", 15)
-        .attr("cx", 15)
-        .attr("cy", 15)
-        .attr("width", 30)
-        .attr("height", 30)
-        .attr("fill", "url(#image)");
-      // node
-      //   .append("image")
-      //   .attr(
-      //     "xlink:href",
-      //     "http://5b0988e595225.cdn.sohucs.com/images/20190725/9af6a5c7aaad426a8926f7bd4a93f41a.jpeg"
-      //   )
-      //   .attr("x", -15)
-      //   .attr("y", -15)
-      //   .attr("width", 30)
-      //   .attr("height", 30);
+        // .attr("class", "image")
+        .attr("width", "30")
+        .attr("height", "30")
+        .attr("fill", "url(#image)")
+        .on("mouseenter", function() {
+          // select element in current context
+          // console.log("xxix");
+          d3.select(this)
+            // .transition()
+            .attr("class", "image");
+          // .attr("transform", "scale(1.5)")
+          // .attr("transform", () => {
+          //   return "translate(-5, -5) scale(1.5)";
+          // });
+          // .attr("cx", function() {
+          //   return -10;
+          // })
+          // .attr("cy", function() {
+          //   return -10;
+          // })
+          // .attr("width", "50")
+          // .attr("height", "50")
+        })
+        // set back
+        .on("mouseleave", function() {
+          d3.select(this)
+            // .transition()
+            .attr("class", "");
+          // .attr("transform", "scale(1)");
+        });
 
-      // node
-      //   .append("text")
-      //   .attr("dx", 12)
-      //   .attr("dy", ".35em")
-      //   .text(function(d) {
-      //     return d.name;
-      //   });
-      node.append("title").text(d => d.id);
+      node
+        .append("text")
+        // .attr("dx", 12)
+        // .attr("dy", ".35em")
+        .attr("fill", "#333")
+        .text(function(d) {
+          return d.labels;
+        });
+      // node.append("title").text(d => d.id);
 
       this.simulation.on("tick", () => {
-        link
+        mylink
           .attr("x1", d => d.source.x)
           .attr("y1", d => d.source.y)
           .attr("x2", d => d.target.x)
@@ -178,12 +274,14 @@ export default {
         function dragged(d) {
           d.fx = d3.event.x;
           d.fy = d3.event.y;
+          // stickNode(d);
         }
 
         function dragended(d) {
           if (!d3.event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
+          // 注释掉可以拖拽时其他节点位置不变
+          // d.fx = null;
+          // d.fy = null;
         }
 
         return d3
@@ -210,5 +308,30 @@ export default {
 .forceMap {
   width: 100%;
   height: 100%;
+}
+.image {
+  // transition: popUp 0.8s ease;
+  animation: popUp 0.8s ease;
+}
+.node text {
+  fill: #333;
+  font-size: 14px;
+}
+.selected text {
+  fill: #f00;
+}
+@keyframes popUp {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  // 10% {
+  //   transform: translate(-1, -1) scale(1);
+  // }
+  80% {
+    transform: translate(-4, -4) scale(1.6);
+  }
+  100% {
+    transform: translate(-5, -5) scale(1.5);
+  }
 }
 </style>

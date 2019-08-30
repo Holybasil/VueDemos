@@ -9,6 +9,7 @@ import "holy-components/dist/holycomponents.css";
 import AntdDesignVue from "ant-design-vue";
 import "ant-design-vue/dist/antd.less";
 import ElementUI from "element-ui";
+import axios from "axios"
 import { Button } from "element-ui";
 import "./assets/element-#FF9300/index.css";
 
@@ -21,6 +22,7 @@ Vue.use(ElementUI);
 // console.log(ElementUI, Button, "element");
 Vue.component(Button.name, Button);
 Vue.use(HolyComponents);
+Vue.prototype.$axios = axios
 Vue.config.productionTip = false;
 
 new Vue({
