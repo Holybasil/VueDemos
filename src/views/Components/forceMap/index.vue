@@ -65,8 +65,9 @@ export default {
         }
         this.property = { ...d.properties };
       },
-      onNodeDBClick(d) {
+      onNodeDBClick: d => {
         console.log(d);
+        this.getMoreData();
       }
     });
     // d3.select(window).on("resize", this.updateWindow);
@@ -78,6 +79,21 @@ export default {
 
       this.svg.attr("width", width).attr("height", height);
       this.simulation.force("center", d3.forceCenter(width / 2, height / 2));
+    },
+    async getMoreData() {
+      const res = await this.$axios.post(
+        // "/data.json"
+        "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getMoreForceData"
+      );
+      console.log(res.data);
+      //  const { nodes, links } = this.svg.handleData(this.options.data);
+      const nodes = res.data.data.nodes.map(d => Object.create(d));
+      const links = res.data.data.relationships
+        .filter(d => {
+          return d.source !== d.target;
+        })
+        .map(d => Object.create(d));
+      this.svg.updateNodeAndLink(nodes, links);
     },
     createForceMap() {
       const width = this.$refs.forceMap.offsetWidth;

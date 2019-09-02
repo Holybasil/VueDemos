@@ -9,6 +9,9 @@ class holyNeo4j {
     this.nodeSvg = null;
     this.linkSvg = null;
     this.myLink = null;
+    this.svgTranslate = null;
+    this.svgScale = null;
+    this.justLoaded = false;
     this.options = {
       arrowSize: 4,
       nodeRadius: 15,
@@ -21,7 +24,8 @@ class holyNeo4j {
       linkTextRotate: false,
       linkTextKey: "type",
       linkTextMap: undefined,
-      data: undefined
+      data: undefined,
+      zoomFit: false
     };
     this.init(selector, options);
   }
@@ -38,28 +42,48 @@ class holyNeo4j {
     // .force("y", d3.forceY());
   }
   appendSVGGraph(selector) {
-    const width = document.querySelector(selector).offsetWidth;
-    const height = document.querySelector(selector).offsetHeight;
+    this.width = document.querySelector(selector).offsetWidth;
+    this.height = document.querySelector(selector).offsetHeight;
     this.svg = d3
       .select(selector)
       .append("svg")
-      .attr("viewBox", [-width / 2, -height / 2, width, height]);
-    const realNodeArrKey = this.options.data.graph.nodes
-      .map(node => node[this.options.linkKey])
-      .sort((a, b) => a - b);
-    console.log(realNodeArrKey, "realNodeArrKey");
-    const linkNode = this.options.data.graph.relationships
-      .map(link => [link.target, link.source])
-      .flat()
-      .sort((a, b) => a - b);
-    console.log([...new Set(linkNode)]);
-    this.nodes = this.options.data.graph.nodes.map(d => Object.create(d));
-    this.links = this.options.data.graph.relationships
-      .filter(d => {
-        return d.source !== d.target;
-      })
-      .map(d => Object.create(d));
-    // console.log(this.links, "links");
+      .attr("width", this.width)
+      .attr("height", this.height)
+      // .call(
+      //   d3.zoom().on("zoom", () => {
+      //     let scale = d3.event.transform.k;
+
+      //     const translate = [d3.event.transform.x, d3.event.transform.y];
+
+      //     // if (this.svgTranslate) {
+      //     //   translate[0] += this.svgTranslate[0];
+      //     //   translate[1] += this.svgTranslate[1];
+      //     // }
+
+      //     // if (this.svgScale) {
+      //     //   scale *= this.svgScale;
+      //     // }
+
+      //     this.svg.attr(
+      //       "transform",
+      //       "translate(" +
+      //         translate[0] +
+      //         ", " +
+      //         translate[1] +
+      //         ") scale(" +
+      //         scale +
+      //         ")"
+      //     );
+      //   })
+      // )
+      // .on("dblclick.zoom", null);
+      .attr("viewBox", [
+        -this.width / 2,
+        -this.height / 2,
+        this.width,
+        this.height
+      ]);
+
     this.nodeSvg = this.svg.append("g").attr("class", "nodes");
     this.linkSvg = this.svg.append("g").attr("class", "links");
   }
@@ -76,40 +100,83 @@ class holyNeo4j {
       //       return 200;
       //     })
       // )
-
       .force("charge", d3.forceManyBody())
+      // .force("center", d3.forceCenter(this.width / 2, this.height / 2))
       .on("tick", () => {
         this.tickNode();
         this.tickLink();
       });
+
+    // .on("end", () => {
+    // if (this.options.zoomFit && !this.justLoaded) {
+    //   this.justLoaded = true;
+    //   this.zoomFit(2);
+    // }
+    // });
   }
+  // zoomFit(transitionDuration) {
+  //   const bounds = this.svg.node().getBBox();
+  //   const parent = this.svg.node().parentElement;
+  //   const fullWidth = parent.clientWidth;
+  //   const fullHeight = parent.clientHeight;
+  //   const width = bounds.width;
+  //   const height = bounds.height;
+  //   const midX = bounds.x + width / 2;
+  //   const midY = bounds.y + height / 2;
+  //   console.log(parent, "parent");
+  //   if (width === 0 || height === 0) {
+  //     return; // nothing to fit
+  //   }
+
+  //   this.svgScale = 0.85 / Math.max(width / fullWidth, height / fullHeight);
+  //   this.svgTranslate = [
+  //     fullWidth / 2 - this.svgScale * midX,
+  //     fullHeight / 2 - this.svgScale * midY
+  //   ];
+
+  //   this.svg.attr(
+  //     "transform",
+  //     "translate(" +
+  //       this.svgTranslate[0] +
+  //       ", " +
+  //       this.svgTranslate[1] +
+  //       ") scale(" +
+  //       this.svgScale +
+  //       ")"
+  //   );
+  //   //        smoothTransform(svgTranslate, svgScale);
+  // }
   appendNode() {
-    return this.node
-      .join("g")
-      .attr("class", "node")
-      .on("click", d => {
-        if (typeof this.options.onNodeClick === "function") {
-          this.options.onNodeClick(d);
-        }
-      })
-      .on("mouseenter", d => {
-        if (typeof this.options.onNodeMouseenter === "function") {
-          this.options.onNodeMouseenter(d);
-        }
-      })
-      .on("mouseleave", d => {
-        if (typeof this.options.onNodeMouseleave === "function") {
-          this.options.onNodeMouseleave(d);
-        }
-      })
-      .on("dblclick", d => {
-        if (typeof this.options.onNodeDBClick === "function") {
-          this.options.onNodeDBClick(d);
-        } else {
-          this.stickNode(d);
-        }
-      })
-      .call(this.drag(this.simulation));
+    return (
+      this.node
+        .enter()
+        .append("g")
+        // .join("g")
+        .attr("class", "node")
+        .on("click", d => {
+          if (typeof this.options.onNodeClick === "function") {
+            this.options.onNodeClick(d);
+          }
+        })
+        .on("mouseenter", d => {
+          if (typeof this.options.onNodeMouseenter === "function") {
+            this.options.onNodeMouseenter(d);
+          }
+        })
+        .on("mouseleave", d => {
+          if (typeof this.options.onNodeMouseleave === "function") {
+            this.options.onNodeMouseleave(d);
+          }
+        })
+        .on("dblclick", d => {
+          if (typeof this.options.onNodeDBClick === "function") {
+            this.options.onNodeDBClick(d);
+          } else {
+            this.stickNode(d);
+          }
+        })
+        .call(this.drag(this.simulation))
+    );
   }
   appendCircleToNode(node) {
     node
@@ -132,6 +199,7 @@ class holyNeo4j {
   }
   appendNodeGroup() {
     const node = this.appendNode();
+    debugger;
     this.appendCircleToNode(node);
     this.appendTextToNode(node);
     return node;
@@ -144,7 +212,7 @@ class holyNeo4j {
       .attr("class", "link");
   }
   appendTextToLink(link) {
-    debugger;
+    // debugger;
     return link
       .append("text")
       .attr("class", "text")
@@ -168,7 +236,7 @@ class holyNeo4j {
     // .attr("marker-mid", "url(#head)");
   }
   appendLinkGroup() {
-    debugger;
+    // debugger;
     const link = this.appendLink();
     // const relationship = appendRelationship(),
     const linkText = this.appendTextToLink(link);
@@ -189,25 +257,27 @@ class holyNeo4j {
     this.node = nodeSet.merge(this.node);
   }
   loadData() {
-    debugger;
-    this.nodes = this.options.data.graph.nodes.map(d => Object.create(d));
-    this.links = this.options.data.graph.relationships
+    const { nodes, links } = this.handleNeoDataToD3Data(this.options.data);
+    this.updateNodeAndLink(nodes, links);
+  }
+  handleNeoDataToD3Data(data) {
+    const nodes = data.graph.nodes.map(d => Object.create(d));
+    const links = data.graph.relationships
       .filter(d => {
         return d.source !== d.target;
       })
       .map(d => Object.create(d));
-    this.updateNodeAndLink(this.nodes, this.links);
+    return { nodes, links };
   }
   updateNodeAndLink(nodes, links) {
-    debugger;
     this.updateNodes(nodes);
     this.updateLinks(links);
 
-    this.simulation.nodes(nodes);
+    this.simulation.nodes(this.nodes);
     this.simulation.force(
       "link",
       d3
-        .forceLink(links)
+        .forceLink(this.links)
         .id(d => d[this.options.linkKey])
         .distance(function() {
           return 200;
@@ -215,7 +285,7 @@ class holyNeo4j {
     );
   }
   updateLinks(links) {
-    debugger;
+    // debugger;
     // 增量的数据加入到数据集中
     this.links.push(...links);
     // 用数据集创建svg link的一个group
