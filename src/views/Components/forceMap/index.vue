@@ -466,4 +466,22 @@ export default {
     }
   }
 }
+
+</style>
+<style>
+g.node{
+  cursor: pointer;
+}
+g.node circle{
+  /* stroke: #ff0000; */
+  /* stroke-width: 2; */
+  /* filter: url(#shadow); */
+  transition: all 0.2s ease-in;
+}
+g.selected circle{
+  transform: scale(1.4);
+}
+g.link text{
+  
+}
 </style>

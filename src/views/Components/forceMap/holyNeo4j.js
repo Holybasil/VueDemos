@@ -23,6 +23,7 @@ class holyNeo4j {
       noseTextSize: "14px",
       nodeTextKey: "labels",
       linkColor: "#a5abb6",
+      linkTextColor: "#333",
       linkTextSize: "12px",
       linkKey: "id",
       linkTextRotate: false,
@@ -167,7 +168,7 @@ class holyNeo4j {
   // }
   appendNode() {
     // cc
-
+    const _this = this
     return (
       this.node
         .enter()
@@ -183,14 +184,12 @@ class holyNeo4j {
             this.stickNode(d);
           }
         })
-        .on("click", d => {
+        .on("click", function(d) {
           timer = setTimeout(() => {
             if (!prevent) {
-              d.fx = d.fy = null;
-              console.log(d, "当前点击数据");
-              if (typeof this.options.onNodeClick === "function") {
-                this.options.onNodeClick(d);
-              }
+              _this.node.classed("selected", false)
+              d3.select(this).classed("selected", true);
+              _this.onNodeClick(d);            
             }
             prevent = false;
           }, delay);
@@ -209,12 +208,31 @@ class holyNeo4j {
         .call(this.drag(this.simulation))
     );
   }
+  onNodeClick(d){
+    // d.fx = d.fy = null;
+    // console.log(d, "当前点击数据");
 
+    if (typeof this.options.onNodeClick === "function") {
+      this.options.onNodeClick(d);
+    }
+  }
   appendCircleToNode(node) {
+    // node
+    // .append("defs")
+    // .append("filter")
+    // .attr('id',"shadow")
+    // .append("feDropShadow")
+    // .attr("flood-color", "#000")
+    // // .flood-opacity
+    // .attr("dx", 0)
+    // .attr("dy", 0)
+    // .attr("stdDeviation", 1.2)
+    // const filter = defs.app
     node
       .append("circle")
       .attr("r", this.options.nodeRadius)
       .attr("fill", this.color());
+    // node.append(shadow)
   }
   appendTextToNode(node) {
     node
@@ -247,7 +265,7 @@ class holyNeo4j {
     return link
       .append("text")
       .attr("class", "text")
-      .attr("fill", "#000000")
+      .attr("fill", this.options.linkTextColor)
       .attr("font-size", this.options.linkTextSize)
       .attr("pointer-events", "none")
       .attr("text-anchor", "middle")
@@ -280,7 +298,6 @@ class holyNeo4j {
     // this.appendLineToLink(link);
   }
   updateNodes(nodes) {
-    debugger;
     this.nodes.push(...nodes);
     this.node = this.nodeSvg
       .selectAll("g.node")
