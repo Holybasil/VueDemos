@@ -59,7 +59,6 @@ export default {
     this.svg = new HolyNeo4j(".forceMap", {
       data,
       onNodeClick: d => {
-        console.log(d);
         if (!this.isPanelShow) {
           this.isPanelShow = true;
         }
@@ -86,19 +85,96 @@ export default {
         "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getMoreForceData"
       );
       console.log(res.data);
-      //  const { nodes, links } = this.svg.handleData(this.options.data);
+      // const { nodes, links } = res.data.data;
       const nodes = res.data.data.nodes.map(d => Object.create(d));
       const links = res.data.data.relationships
         .filter(d => {
           return d.source !== d.target;
         })
         .map(d => Object.create(d));
+      // const data = {
+      //   results: [
+      //     {
+      //       data: [
+      //         {
+      //           graph: {}
+      //         }
+      //       ]
+      //     }
+      //   ]
+      // };
+      // data.results[0].data[0].graph = res.data.data;
+      // console.log(data, "参数data");
+      // const { nodes, links } = this.neo4jDataToD3Data(data);
+      // console.log(nodes, links, '结果参数')
       this.svg.updateNodeAndLink(nodes, links);
+    },
+    contains(array, id) {
+      const filter = array.filter(elem => elem.id === id);
+
+      return filter.length > 0;
+    },
+    neo4jDataToD3Data(data) {
+      var graph = {
+        nodes: [],
+        links: []
+      };
+
+      data.results.forEach(result => {
+        result.data.forEach(data => {
+          data.graph.nodes.forEach(node => {
+            if (!this.contains(graph.nodes, node.id)) {
+              graph.nodes.push(node);
+            }
+          });
+
+          data.graph.relationships.forEach(relationship => {
+            // relationship.source = relationship.startNode;
+            // relationship.target = relationship.endNode;
+            graph.links.push(relationship);
+          });
+
+          data.graph.relationships.sort(function(a, b) {
+            if (a.source > b.source) {
+              return 1;
+            } else if (a.source < b.source) {
+              return -1;
+            } else {
+              if (a.target > b.target) {
+                return 1;
+              }
+
+              if (a.target < b.target) {
+                return -1;
+              } else {
+                return 0;
+              }
+            }
+          });
+
+          for (var i = 0; i < data.graph.relationships.length; i++) {
+            if (
+              i !== 0 &&
+              data.graph.relationships[i].source ===
+                data.graph.relationships[i - 1].source &&
+              data.graph.relationships[i].target ===
+                data.graph.relationships[i - 1].target
+            ) {
+              data.graph.relationships[i].linknum =
+                data.graph.relationships[i - 1].linknum + 1;
+            } else {
+              data.graph.relationships[i].linknum = 1;
+            }
+          }
+        });
+      });
+
+      return graph;
     },
     createForceMap() {
       const width = this.$refs.forceMap.offsetWidth;
       const height = this.$refs.forceMap.offsetHeight;
-      // const links = data.graph.relationships;
+      // const links = data.graph.links;
       // const nodes = data.graph.nodes;
       const links = data.graph.relationships.map(d => Object.create(d));
       const nodes = data.graph.nodes.map(d => Object.create(d));

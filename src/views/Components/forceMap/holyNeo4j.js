@@ -1,4 +1,8 @@
 import * as d3 from "d3";
+
+var timer = 0;
+var delay = 200;
+var prevent = false;
 class holyNeo4j {
   constructor(selector, options = {}) {
     this.svg = null;
@@ -27,6 +31,7 @@ class holyNeo4j {
       data: undefined,
       zoomFit: false
     };
+
     this.init(selector, options);
   }
   init(selector, options) {
@@ -42,45 +47,61 @@ class holyNeo4j {
   appendSVGGraph(selector) {
     this.width = document.querySelector(selector).offsetWidth;
     this.height = document.querySelector(selector).offsetHeight;
+    // var xScale = d3
+    //   .scaleLinear()
+    //   // .domain([0, this.width])
+    //   .range([0, this.width]);
+    // var yScale = d3
+    //   .scaleLinear()
+    //   // .domain([0, this.height])
+    //   .range([0, this.height]);
     this.svg = d3
       .select(selector)
       .append("svg")
       .attr("width", this.width)
       .attr("height", this.height)
-      // .call(
-      //   d3.zoom().on("zoom", () => {
-      //     let scale = d3.event.transform.k;
+      // .attr("viewBox", [
+      //   -this.width / 2,
+      //   -this.height / 2,
+      //   this.width,
+      //   this.height
+      // ])
+      // .append("g")
+      // .attr("width", this.width)
+      // .attr("height", this.height)
+      // .call(zoomer)
+      .call(
+        d3
+          .zoom()
+          // .x(xScale)
+          // .y(yScale)
+          .on("zoom", () => {
+            let scale = d3.event.transform.k;
 
-      //     const translate = [d3.event.transform.x, d3.event.transform.y];
+            const translate = [d3.event.transform.x, d3.event.transform.y];
 
-      //     // if (this.svgTranslate) {
-      //     //   translate[0] += this.svgTranslate[0];
-      //     //   translate[1] += this.svgTranslate[1];
-      //     // }
+            // if (this.svgTranslate) {
+            //   translate[0] += this.svgTranslate[0];
+            //   translate[1] += this.svgTranslate[1];
+            // }
 
-      //     // if (this.svgScale) {
-      //     //   scale *= this.svgScale;
-      //     // }
+            // if (this.svgScale) {
+            //   scale *= this.svgScale;
+            // }
 
-      //     this.svg.attr(
-      //       "transform",
-      //       "translate(" +
-      //         translate[0] +
-      //         ", " +
-      //         translate[1] +
-      //         ") scale(" +
-      //         scale +
-      //         ")"
-      //     );
-      //   })
-      // )
-      // .on("dblclick.zoom", null);
-      .attr("viewBox", [
-        -this.width / 2,
-        -this.height / 2,
-        this.width,
-        this.height
-      ]);
+            this.svg.attr(
+              "transform",
+              "translate(" +
+                translate[0] +
+                ", " +
+                translate[1] +
+                ") scale(" +
+                scale +
+                ")"
+            );
+          })
+      )
+      .on("dblclick.zoom", null);
 
     this.nodeSvg = this.svg.append("g").attr("class", "nodes");
     this.linkSvg = this.svg.append("g").attr("class", "links");
@@ -99,7 +120,7 @@ class holyNeo4j {
       //     })
       // )
       .force("charge", d3.forceManyBody())
-      // .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+      .force("center", d3.forceCenter(this.width / 2, this.height / 2))
       .on("tick", () => {
         this.tickNode();
         this.tickLink();
@@ -145,16 +166,34 @@ class holyNeo4j {
   //   //        smoothTransform(svgTranslate, svgScale);
   // }
   appendNode() {
+    // cc
+
     return (
       this.node
         .enter()
         .append("g")
         // .join("g")
         .attr("class", "node")
-        .on("click", d => {
-          if (typeof this.options.onNodeClick === "function") {
-            this.options.onNodeClick(d);
+        .on("dblclick", d => {
+          clearTimeout(timer);
+          prevent = true;
+          if (typeof this.options.onNodeDBClick === "function") {
+            this.options.onNodeDBClick(d);
+          } else {
+            this.stickNode(d);
           }
+        })
+        .on("click", d => {
+          timer = setTimeout(() => {
+            if (!prevent) {
+              d.fx = d.fy = null;
+              console.log(d, "当前点击数据");
+              if (typeof this.options.onNodeClick === "function") {
+                this.options.onNodeClick(d);
+              }
+            }
+            prevent = false;
+          }, delay);
         })
         .on("mouseenter", d => {
           if (typeof this.options.onNodeMouseenter === "function") {
@@ -166,16 +205,11 @@ class holyNeo4j {
             this.options.onNodeMouseleave(d);
           }
         })
-        .on("dblclick", d => {
-          if (typeof this.options.onNodeDBClick === "function") {
-            this.options.onNodeDBClick(d);
-          } else {
-            this.stickNode(d);
-          }
-        })
+
         .call(this.drag(this.simulation))
     );
   }
+
   appendCircleToNode(node) {
     node
       .append("circle")
@@ -197,7 +231,6 @@ class holyNeo4j {
   }
   appendNodeGroup() {
     const node = this.appendNode();
-    debugger;
     this.appendCircleToNode(node);
     this.appendTextToNode(node);
     return node;
@@ -247,12 +280,30 @@ class holyNeo4j {
     // this.appendLineToLink(link);
   }
   updateNodes(nodes) {
+    debugger;
     this.nodes.push(...nodes);
     this.node = this.nodeSvg
       .selectAll("g.node")
       .data(this.nodes, d => d[this.options.linkKey]);
     const nodeSet = this.appendNodeGroup();
     this.node = nodeSet.merge(this.node);
+    // this.nodeSvg.selectAll("g.node").each(function(d) {
+    //   const node = d3.select(this);
+    //   node.call(cc);
+    //   cc.on("click", d => {
+    //     console.log("dianji");
+    //     if (typeof this.options.onNodeClick === "function") {
+    //       this.options.onNodeClick(d);
+    //     }
+    //   });
+    //   cc.on("dblclick", d => {
+    //     if (typeof this.options.onNodeDBClick === "function") {
+    //       this.options.onNodeDBClick(d);
+    //     } else {
+    //       this.stickNode(d);
+    //     }
+    //   });
+    // });
   }
   loadData() {
     const { nodes, links } = this.handleNeoDataToD3Data(this.options.data);
