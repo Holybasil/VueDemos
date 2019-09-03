@@ -61,52 +61,20 @@ class holyNeo4j {
       .append("svg")
       .attr("width", this.width)
       .attr("height", this.height)
-      // .attr("viewBox", [
-      //   -this.width / 2,
-      //   -this.height / 2,
-      //   this.width,
-      //   this.height
-      // ])
-      // .append("g")
-      // .attr("width", this.width)
-      // .attr("height", this.height)
-      // .call(zoomer)
-      .call(
-        d3
-          .zoom()
-          // .x(xScale)
-          // .y(yScale)
-          .on("zoom", () => {
-            let scale = d3.event.transform.k;
-
-            const translate = [d3.event.transform.x, d3.event.transform.y];
-
-            // if (this.svgTranslate) {
-            //   translate[0] += this.svgTranslate[0];
-            //   translate[1] += this.svgTranslate[1];
-            // }
-
-            // if (this.svgScale) {
-            //   scale *= this.svgScale;
-            // }
-
-            this.svg.attr(
-              "transform",
-              "translate(" +
-                translate[0] +
-                ", " +
-                translate[1] +
-                ") scale(" +
-                scale +
-                ")"
-            );
-          })
-      )
-      .on("dblclick.zoom", null);
-
+      .call(d3.zoom().on("zoom", () => {
+        const scale = d3.event.transform.k;
+        const translate = [d3.event.transform.x, d3.event.transform.y];
+        this.svg.attr("transform", `translate(${translate[0]}, ${translate[1]}) scale(${scale})`);
+      }))
+      .on("dblclick.zoom", null)
+      .append("g").attr("class", 'graph')
+      .attr('width', '100%')
+      .attr('height', '100%');
+      
     this.nodeSvg = this.svg.append("g").attr("class", "nodes");
     this.linkSvg = this.svg.append("g").attr("class", "links");
   }
+  
   initSimulation() {
     this.simulation = d3
       .forceSimulation()

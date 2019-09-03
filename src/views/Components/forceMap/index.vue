@@ -469,6 +469,9 @@ export default {
 
 </style>
 <style>
+svg{
+  cursor: move;
+}
 g.node{
   cursor: pointer;
 }
@@ -482,6 +485,6 @@ g.selected circle{
   transform: scale(1.4);
 }
 g.link text{
-  
+
 }
 </style>
