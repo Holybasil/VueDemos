@@ -510,19 +510,6 @@ class holyNeo4j {
           },
           angle
         );
-        // console.log(
-        //   `M ${rotatedPointA1.x} ${rotatedPointA1.y} L ${rotatedPointB1.x} ${
-        //     rotatedPointB1.y
-        //   } L ${rotatedPointC1.x} ${rotatedPointC1.y} L ${rotatedPointD1.x} ${
-        //     rotatedPointD1.y
-        //   } Z M ${rotatedPointA2.x} ${rotatedPointA2.y} L ${rotatedPointB2.x} ${
-        //     rotatedPointB2.y
-        //   } L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${
-        //     rotatedPointD2.y
-        //   } L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${
-        //     rotatedPointF2.y
-        //   } L ${rotatedPointG2.x} ${rotatedPointG2.y} Z`
-        // );
         return `M ${rotatedPointA1.x} ${rotatedPointA1.y} L ${rotatedPointB1.x} ${rotatedPointB1.y} L ${rotatedPointC1.x} ${rotatedPointC1.y} L ${rotatedPointD1.x} ${rotatedPointD1.y} Z M ${rotatedPointA2.x} ${rotatedPointA2.y} L ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${rotatedPointF2.y} L ${rotatedPointG2.x} ${rotatedPointG2.y} Z`;
       });
     });

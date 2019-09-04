@@ -1,3 +1,4 @@
+// 一些组件
 const introduce = () => import("@/views/Overview/introduce");
 const elementuiSelect = () => import("@/views/Components/elementuiSelect");
 const elementTree = () => import("@/views/Components/elementTree");
@@ -6,9 +7,12 @@ const treeSelect = () => import("@/views/Components/treeSelect");
 const listSelect = () => import("@/views/Components/listSelect");
 const clickoutside = () => import("@/views/Components/clickoutside");
 const transfer = () => import("@/views/Components/transfer");
-const forceMap = () => import("@/views/Components/forceMap");
 
+// 数据可视化
 const d3Funnel = () => import("@/views/VisualDataGraph/d3Funnel");
+const forceMap = () => import("@/views/VisualDataGraph/forceMap");
+const joinExample = () => import("@/views/VisualDataGraph/joinExample");
+
 // jsDetail-jsonEditor
 const jsonEditor = () => import("@/views/jsDetail/jsonEditor");
 const jsonValidate = () => import("@/views/jsDetail/jsonValidate");
@@ -61,11 +65,6 @@ export default [
         name: "transfer",
         path: "/components/transfer",
         component: transfer
-      },
-      {
-        name: "forceMap",
-        path: "/components/forceMap",
-        component: forceMap
       }
     ]
   },
@@ -77,6 +76,16 @@ export default [
         name: "d3Funnel",
         path: "/visualDataGraph/d3Funnel",
         component: d3Funnel
+      },
+      {
+        name: "forceMap",
+        path: "/visualDataGraph/forceMap",
+        component: forceMap
+      },
+      {
+        name: "joinExample",
+        path: "/visualDataGraph/joinExample",
+        component: joinExample
       }
     ]
   },
