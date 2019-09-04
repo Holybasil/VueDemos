@@ -78,18 +78,10 @@ class holyNeo4j {
   initSimulation() {
     this.simulation = d3
       .forceSimulation()
-      // .forceSimulation(this.nodes)
-      // .force(
-      //   "link",
-      //   d3
-      //     .forceLink(this.links)
-      //     .id(d => d[this.options.linkKey])
-      //     .distance(function() {
-      //       return 200;
-      //     })
-      // )
-      .force("charge", d3.forceManyBody())
+      .force("charge", d3.forceManyBody().strength(-700))
       .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+      // .force("collide", d3.forceCollide())
+      .force("radial", d3.forceRadial(Math.min(this.width/2, this.height/2)/2, this.width/2, this.height/2).strength(0.3))
       .on("tick", () => {
         this.tickNode();
         this.tickLink();
