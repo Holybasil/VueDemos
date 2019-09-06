@@ -48,40 +48,47 @@ class holyNeo4j {
   appendSVGGraph(selector) {
     this.width = document.querySelector(selector).offsetWidth;
     this.height = document.querySelector(selector).offsetHeight;
-    // var xScale = d3
-    //   .scaleLinear()
-    //   // .domain([0, this.width])
-    //   .range([0, this.width]);
-    // var yScale = d3
-    //   .scaleLinear()
-    //   // .domain([0, this.height])
-    //   .range([0, this.height]);
     this.svg = d3
       .select(selector)
       .append("svg")
       .attr("width", this.width)
       .attr("height", this.height)
-      .call(d3.zoom().on("zoom", () => {
-        const scale = d3.event.transform.k;
-        const translate = [d3.event.transform.x, d3.event.transform.y];
-        this.svg.attr("transform", `translate(${translate[0]}, ${translate[1]}) scale(${scale})`);
-      }))
+      .call(
+        d3.zoom().on("zoom", () => {
+          const scale = d3.event.transform.k;
+          const translate = [d3.event.transform.x, d3.event.transform.y];
+          this.svg.attr(
+            "transform",
+            `translate(${translate[0]}, ${translate[1]}) scale(${scale})`
+          );
+        })
+      )
       .on("dblclick.zoom", null)
-      .append("g").attr("class", 'graph')
-      .attr('width', '100%')
-      .attr('height', '100%');
-      
+      .append("g")
+      .attr("class", "graph")
+      .attr("width", "100%")
+      .attr("height", "100%");
+
     this.nodeSvg = this.svg.append("g").attr("class", "nodes");
     this.linkSvg = this.svg.append("g").attr("class", "links");
   }
-  
+
   initSimulation() {
     this.simulation = d3
       .forceSimulation()
       .force("charge", d3.forceManyBody().strength(-700))
       .force("center", d3.forceCenter(this.width / 2, this.height / 2))
       // .force("collide", d3.forceCollide())
-      .force("radial", d3.forceRadial(Math.min(this.width/2, this.height/2)/2, this.width/2, this.height/2).strength(0.3))
+      .force(
+        "radial",
+        d3
+          .forceRadial(
+            Math.min(this.width / 2, this.height / 2) / 2,
+            this.width / 2,
+            this.height / 2
+          )
+          .strength(0.3)
+      )
       .on("tick", () => {
         this.tickNode();
         this.tickLink();
@@ -128,7 +135,7 @@ class holyNeo4j {
   // }
   appendNode() {
     // cc
-    const _this = this
+    const _this = this;
     return (
       this.node
         .enter()
@@ -147,9 +154,9 @@ class holyNeo4j {
         .on("click", function(d) {
           timer = setTimeout(() => {
             if (!prevent) {
-              _this.node.classed("selected", false)
+              _this.node.classed("selected", false);
               d3.select(this).classed("selected", true);
-              _this.onNodeClick(d);            
+              _this.onNodeClick(d);
             }
             prevent = false;
           }, delay);
@@ -168,7 +175,7 @@ class holyNeo4j {
         .call(this.drag(this.simulation))
     );
   }
-  onNodeClick(d){
+  onNodeClick(d) {
     // d.fx = d.fy = null;
     // console.log(d, "当前点击数据");
 
