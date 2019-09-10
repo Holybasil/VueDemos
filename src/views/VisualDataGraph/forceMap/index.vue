@@ -1,6 +1,7 @@
 <template>
   <!-- <div class="forceMap"> -->
   <div class="forceMapPage">
+    <el-button @click="refresh" class="refresh">刷新</el-button>
     <div class="forceMap" ref="forceMap"></div>
     <VueDraggableResizable :parent="true" :w="400">
       <div class="panel" v-show="isPanelShow">
@@ -10,19 +11,24 @@
         </div>
         <div class="content">
           <div>
-            <span>身份证号：</span><span>{{ property.idCard }}</span>
+            <span>身份证号：</span>
+            <span>{{ property.idCard }}</span>
           </div>
           <div>
-            <span>手机号：</span><span>{{ property.phone }}</span>
+            <span>手机号：</span>
+            <span>{{ property.phone }}</span>
           </div>
           <div>
-            <span>邮箱：</span><span>{{ property.email }}</span>
+            <span>邮箱：</span>
+            <span>{{ property.email }}</span>
           </div>
           <div>
-            <span>首次时间：</span><span>{{ property.timestamp }}</span>
+            <span>首次时间：</span>
+            <span>{{ property.timestamp }}</span>
           </div>
           <div>
-            <span>关联进件号：</span><span>{{ property.loanIds }}</span>
+            <span>关联进件号：</span>
+            <span>{{ property.loanIds }}</span>
           </div>
         </div>
       </div>
@@ -33,12 +39,12 @@
 </template>
 
 <script>
-let data;
+// let data;
 // nodes中的group 是为了表示哪些node属于一个颜色
 // link中的value 是为了表示连线的粗细
-// import data from "./data";
+import data from "./data";
 import * as d3 from "d3";
-import VueDraggableResizable from 'vue-draggable-resizable'
+import VueDraggableResizable from "vue-draggable-resizable";
 
 import HolyNeo4j from "./holyNeo4j";
 export default {
@@ -49,34 +55,59 @@ export default {
       property: {}
     };
   },
-  components:{VueDraggableResizable},
+  components: { VueDraggableResizable },
   created() {
     // console.log(data);
   },
-  async mounted() {
-    const res = await this.$axios.post(
-      // "/data.json"
-      "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getForceMapOther"
-    );
-    // console.log(data, "eee");
-    data = res.data.data;
-    // this.createForceMap();
-    this.svg = new HolyNeo4j(".forceMap", {
-      data,
-      onNodeClick: d => {
-        if (!this.isPanelShow) {
-          this.isPanelShow = true;
-        }
-        this.property = { ...d.properties };
-      },
-      onNodeDBClick: d => {
-        console.log(d);
-        this.getMoreData();
-      }
-    });
+  mounted() {
+    this.init();
     // d3.select(window).on("resize", this.updateWindow);
   },
   methods: {
+    async init() {
+      // const res = await this.$axios.post(
+      //   // "/data.json"
+      //   "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getForceMapOther"
+      // );
+      // // console.log(data, "eee");
+      // data = res.data.data;
+      // this.createForceMap();
+      this.svg = new HolyNeo4j(".forceMap", {
+        data,
+        onNodeClick: d => {
+          if (!this.isPanelShow) {
+            this.isPanelShow = true;
+          }
+          this.property = { ...d.properties };
+        },
+        onNodeDBClick: d => {
+          console.log(d);
+          this.getMoreData();
+        }
+      });
+    },
+    async refresh() {
+      const res = await this.$axios.post(
+        // "/data.json"
+        "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getMiniForceMap"
+      );
+      // console.log(data, "eee");
+      data = res.data.data;
+      // this.createForceMap();
+      this.svg = new HolyNeo4j(".forceMap", {
+        data,
+        onNodeClick: d => {
+          if (!this.isPanelShow) {
+            this.isPanelShow = true;
+          }
+          this.property = { ...d.properties };
+        },
+        onNodeDBClick: d => {
+          console.log(d);
+          this.getMoreData();
+        }
+      });
+    },
     updateWindow() {
       const width = this.$refs.forceMap.offsetWidth;
       const height = this.$refs.forceMap.offsetHeight;
@@ -109,7 +140,10 @@ export default {
   width: 100%;
   height: 100%;
 }
-
+.refresh {
+  position: absolute;
+  z-index: 99;
+}
 .forceMapPage {
   position: relative;
   .panel {
@@ -143,25 +177,23 @@ export default {
     }
   }
 }
-
 </style>
 <style>
-svg{
+svg {
   cursor: move;
 }
-g.node{
+g.node {
   cursor: pointer;
 }
-g.node circle{
+g.node circle {
   /* stroke: #ff0000; */
   /* stroke-width: 2; */
   /* filter: url(#shadow); */
   transition: all 0.2s ease-in;
 }
-g.selected circle{
+g.selected circle {
   transform: scale(1.4);
 }
-g.link text{
-
+g.link text {
 }
 </style>

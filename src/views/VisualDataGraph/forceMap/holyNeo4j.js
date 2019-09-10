@@ -50,6 +50,7 @@ class holyNeo4j {
     this.height = document.querySelector(selector).offsetHeight;
     this.svg = d3
       .select(selector)
+      .html("")
       .append("svg")
       .attr("width", this.width)
       .attr("height", this.height)
@@ -72,7 +73,7 @@ class holyNeo4j {
     this.nodeSvg = this.svg.append("g").attr("class", "nodes");
     this.linkSvg = this.svg.append("g").attr("class", "links");
   }
-
+  clearSvg() {}
   initSimulation() {
     this.simulation = d3
       .forceSimulation()
@@ -381,9 +382,7 @@ class holyNeo4j {
         const angle = _this.rotation(d.source, d.target);
         const textBoundingBox = text.node().getBBox();
         // debugger;
-        if (!textBoundingBox) {
-          console.log(textBoundingBox, "textBoundingBox");
-        }
+
         const textPadding = 5;
         const u = _this.unitaryVector(d.source, d.target);
         const textMargin = {
@@ -517,7 +516,8 @@ class holyNeo4j {
           },
           angle
         );
-        return `M ${rotatedPointA1.x} ${rotatedPointA1.y} L ${rotatedPointB1.x} ${rotatedPointB1.y} L ${rotatedPointC1.x} ${rotatedPointC1.y} L ${rotatedPointD1.x} ${rotatedPointD1.y} Z M ${rotatedPointA2.x} ${rotatedPointA2.y} L ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${rotatedPointF2.y} L ${rotatedPointG2.x} ${rotatedPointG2.y} Z`;
+        // return `M ${rotatedPointA1.x} ${rotatedPointA1.y} L ${rotatedPointB1.x} ${rotatedPointB1.y} L ${rotatedPointC1.x} ${rotatedPointC1.y} L ${rotatedPointD1.x} ${rotatedPointD1.y} Z M ${rotatedPointA2.x} ${rotatedPointA2.y} L ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${rotatedPointF2.y} L ${rotatedPointG2.x} ${rotatedPointG2.y} Z`;
+        return `M ${rotatedPointA1.x} ${rotatedPointA1.y} A 500 500 0 0 1 ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${rotatedPointF2.y} A 500 500 0 0 0 ${rotatedPointD1.x} ${rotatedPointD1.y} Z`;
       });
     });
   }
