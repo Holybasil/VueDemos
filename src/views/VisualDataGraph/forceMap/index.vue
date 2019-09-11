@@ -83,6 +83,12 @@ export default {
         onNodeDBClick: d => {
           console.log(d);
           this.getMoreData();
+        },
+        onLinkClick: d => {
+          if (!this.isPanelShow) {
+            this.isPanelShow = true;
+          }
+          this.property = { ...d.properties };
         }
       });
     },
@@ -182,7 +188,8 @@ export default {
 svg {
   cursor: move;
 }
-g.node {
+g.node,
+g.link {
   cursor: pointer;
 }
 g.node circle {
@@ -194,6 +201,7 @@ g.node circle {
 g.selected circle {
   transform: scale(1.4);
 }
-g.link text {
+g.link text textPath {
+  /* background-color: #fff; */
 }
 </style>

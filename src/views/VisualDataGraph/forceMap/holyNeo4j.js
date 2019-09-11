@@ -223,30 +223,54 @@ class holyNeo4j {
   }
   appendLink() {
     // debugger;
+    const _this = this;
     return this.link
       .enter()
       .append("g")
-      .attr("class", "link");
+      .attr("class", "link")
+      .on("click", function(d) {
+        _this.link.classed("selected", false);
+        d3.select(this).classed("selected", true);
+        _this.onLinkClick(d);
+      });
+  }
+  onLinkClick(d) {
+    // d.fx = d.fy = null;
+    // console.log(d, "当前点击数据");
+
+    if (typeof this.options.onLinkClick === "function") {
+      this.options.onLinkClick(d);
+    }
   }
   appendTextToLink(link) {
     // debugger;
-    return link
-      .append("text")
-      .attr("class", "text")
-      .attr("fill", this.options.linkTextColor)
-      .attr("font-size", this.options.linkTextSize)
-      .attr("pointer-events", "none")
-      .attr("text-anchor", "middle")
-      .text(d => {
-        return this.options.linkTextMap
-          ? this.options.linkTextMap[d[this.options.linkTextKey]]
-          : d[this.options.linkTextKey];
-      });
+    return (
+      link
+        .append("text")
+        .attr("class", "text")
+        .attr("fill", this.options.linkTextColor)
+        // .attr("pointer-events", "none")
+        .append("textPath")
+        .attr("class", "textPath")
+        .attr(
+          "href",
+          d => "#" + d.source + d[this.options.linkTextKey] + d.target
+        )
+        .attr("startOffset", "75%")
+        .attr("font-size", this.options.linkTextSize)
+        // .attr("text-anchor", "middle")
+        .text(d => {
+          return this.options.linkTextMap
+            ? this.options.linkTextMap[d[this.options.linkTextKey]]
+            : d[this.options.linkTextKey];
+        })
+    );
   }
   appendLineToLink(link) {
     return link
       .append("path")
       .attr("class", "path")
+      .attr("id", d => d.source + d[this.options.linkTextKey] + d.target)
       .attr("fill", "#a5abb6")
       .attr("stroke", "none");
     // this.myLink = link.append("line").attr("stroke", "#999");
@@ -296,7 +320,45 @@ class holyNeo4j {
   }
   handleNeoDataToD3Data(data) {
     const nodes = data.graph.nodes.map(d => Object.create(d));
-    const links = data.graph.relationships
+    const relationships = data.graph.relationships;
+    relationships.forEach(relationship => {
+      const sameAll = relationships.filter(link => {
+        return (
+          (relationship.source === link.source &&
+            relationship.target === link.target) ||
+          (relationship.source === link.target &&
+            relationship.target === link.source)
+        );
+      });
+      // debugger
+      sameAll
+        .sort((a, b) => a.source - b.target)
+        .forEach((s, i) => {
+          if (s.type === "草莓") {
+            debugger;
+          }
+          s.temp = {};
+          s.temp.sameIndex = i + 1;
+          s.temp.sameTotal = sameAll.length;
+          s.temp.sameTotalHalf = s.temp.sameTotal / 2;
+          s.temp.sameUneven = s.temp.sameTotal % 2 !== 0; // 单数个点
+          s.temp.sameMiddleLink =
+            s.temp.sameUneven === true &&
+            Math.ceil(s.temp.sameTotalHalf) === s.temp.sameIndex;
+          s.temp.sameLowerHalf = s.temp.sameIndex <= s.temp.sameTotalHalf;
+          s.temp.sameArcDirection = 1;
+          // s.temp.sameArcDirection = s.temp.sameLowerHalf ? 0 : 1;
+          s.temp.sameIndexCorrected = s.temp.sameLowerHalf
+            ? s.temp.sameIndex
+            : s.temp.sameIndex - Math.ceil(s.temp.sameTotalHalf);
+        });
+    });
+    var maxSame = Math.max(...relationships.map(d => d.temp.sameTotal));
+    relationships.forEach(link => {
+      link.temp.maxSameHalf = Math.round(maxSame / 2);
+    });
+    // debugger;
+    const links = relationships
       .filter(d => {
         return d.source !== d.target;
       })
@@ -364,7 +426,7 @@ class holyNeo4j {
         );
       });
 
-      this.tickRelationshipsTexts();
+      // this.tickRelationshipsTexts();
       this.tickRelationshipsOutlines();
     }
   }
@@ -373,7 +435,7 @@ class holyNeo4j {
     this.linkSvg.selectAll("g.link").each(function(relationship) {
       const rel = d3.select(this);
       const outline = rel.select(".path");
-      const text = rel.select(".text");
+      const text = rel.select(".textPath");
       // const bbox = text.node().getBBox();
       // const padding = 3;
       // debugger;
@@ -385,18 +447,18 @@ class holyNeo4j {
 
         const textPadding = 5;
         const u = _this.unitaryVector(d.source, d.target);
-        const textMargin = {
-          x:
-            (d.target.x -
-              d.source.x -
-              (textBoundingBox.width + textPadding) * u.x) *
-            0.5,
-          y:
-            (d.target.y -
-              d.source.y -
-              (textBoundingBox.width + textPadding) * u.y) *
-            0.5
-        };
+        // const textMargin = {
+        //   x:
+        //     (d.target.x -
+        //       d.source.x -
+        //       (textBoundingBox.width + textPadding) * u.x) *
+        //     0.5,
+        //   y:
+        //     (d.target.y -
+        //       d.source.y -
+        //       (textBoundingBox.width + textPadding) * u.y) *
+        //     0.5
+        // };
         const n = _this.unitaryNormalVector(d.source, d.target);
         const rotatedPointA1 = _this.rotatePoint(
           center,
@@ -406,16 +468,16 @@ class holyNeo4j {
           },
           angle
         );
-        const rotatedPointB1 = _this.rotatePoint(
-          center,
-          { x: textMargin.x - n.x, y: textMargin.y - n.y },
-          angle
-        );
-        const rotatedPointC1 = _this.rotatePoint(
-          center,
-          { x: textMargin.x, y: textMargin.y },
-          angle
-        );
+        // const rotatedPointB1 = _this.rotatePoint(
+        //   center,
+        //   { x: textMargin.x - n.x, y: textMargin.y - n.y },
+        //   angle
+        // );
+        // const rotatedPointC1 = _this.rotatePoint(
+        //   center,
+        //   { x: textMargin.x, y: textMargin.y },
+        //   angle
+        // );
         const rotatedPointD1 = _this.rotatePoint(
           center,
           {
@@ -424,14 +486,14 @@ class holyNeo4j {
           },
           angle
         );
-        const rotatedPointA2 = _this.rotatePoint(
-          center,
-          {
-            x: d.target.x - d.source.x - textMargin.x - n.x,
-            y: d.target.y - d.source.y - textMargin.y - n.y
-          },
-          angle
-        );
+        // const rotatedPointA2 = _this.rotatePoint(
+        //   center,
+        //   {
+        //     x: d.target.x - d.source.x - textMargin.x - n.x,
+        //     y: d.target.y - d.source.y - textMargin.y - n.y
+        //   },
+        //   angle
+        // );
         const rotatedPointB2 = _this.rotatePoint(
           center,
           {
@@ -508,17 +570,43 @@ class holyNeo4j {
           },
           angle
         );
-        const rotatedPointG2 = _this.rotatePoint(
-          center,
-          {
-            x: d.target.x - d.source.x - textMargin.x,
-            y: d.target.y - d.source.y - textMargin.y
-          },
-          angle
-        );
+        // const rotatedPointG2 = _this.rotatePoint(
+        //   center,
+        //   {
+        //     x: d.target.x - d.source.x - textMargin.x,
+        //     y: d.target.y - d.source.y - textMargin.y
+        //   },
+        //   angle
+        // );
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        const unevenCorrection = d.temp.sameUneven ? 0 : 0.5;
+        const curvature = 2;
+        let arc =
+          (1.0 / curvature) *
+          ((dr * d.temp.maxSameHalf) /
+            (d.temp.sameIndexCorrected - unevenCorrection));
+        if (d.temp.sameMiddleLink) {
+          arc = 0;
+        }
+        const direct = [
+          d.temp.sameArcDirection,
+          Math.abs(d.temp.sameArcDirection - 1)
+        ];
+
         // return `M ${rotatedPointA1.x} ${rotatedPointA1.y} L ${rotatedPointB1.x} ${rotatedPointB1.y} L ${rotatedPointC1.x} ${rotatedPointC1.y} L ${rotatedPointD1.x} ${rotatedPointD1.y} Z M ${rotatedPointA2.x} ${rotatedPointA2.y} L ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${rotatedPointF2.y} L ${rotatedPointG2.x} ${rotatedPointG2.y} Z`;
-        return `M ${rotatedPointA1.x} ${rotatedPointA1.y} A 500 500 0 0 1 ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${rotatedPointF2.y} A 500 500 0 0 0 ${rotatedPointD1.x} ${rotatedPointD1.y} Z`;
+        return `M ${rotatedPointA1.x} ${rotatedPointA1.y} A ${arc} ${arc} 0 0 ${
+          direct[0]
+        } ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${
+          rotatedPointC2.y
+        } L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${
+          rotatedPointE2.y
+        } L ${rotatedPointF2.x} ${rotatedPointF2.y} A ${arc} ${arc} 0 0 ${
+          direct[1]
+        } ${rotatedPointD1.x} ${rotatedPointD1.y} Z`;
       });
+      text.attr("startOffset", d => (d.target.x > d.source.x ? "25%" : "75%"));
     });
   }
   tickRelationshipsTexts() {

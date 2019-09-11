@@ -1,5 +1,4 @@
-export default {
-  graph: {
+var graph = {
     nodes: [
       {
         id: 36177992,
@@ -368,34 +367,6 @@ export default {
         target: 27544689
       },
       {
-        id: 33422109,
-        source: 27327117,
-        type: "我是第三个",
-        properties: {
-          relationType: "4",
-          linkedTypes: [],
-          linkedNos: [],
-          gdrRelation: "",
-          dbrRelation: "",
-          loanIds: ["2018111210471200001", "2018122515590300001"]
-        },
-        target: 27544689
-      },
-      {
-        id: 33422107,
-        source: 27327117,
-        type: "我是第四个",
-        properties: {
-          relationType: "4",
-          linkedTypes: [],
-          linkedNos: [],
-          gdrRelation: "",
-          dbrRelation: "",
-          loanIds: ["2018111210471200001", "2018122515590300001"]
-        },
-        target: 27544689
-      },
-      {
         id: 31768390,
         source: 34964136,
         type: "啦啦啦啦啦",
@@ -715,6 +686,3 @@ export default {
       }
     ]
   },
-  returnCode: "0",
-  returnMsg: "ok"
-};
