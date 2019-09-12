@@ -201,6 +201,10 @@ g.node circle {
 g.selected circle {
   transform: scale(1.4);
 }
+/* g.link .path {
+  position: relative;
+  z-index: -99;
+} */
 g.link text textPath {
   /* background-color: #fff; */
 }

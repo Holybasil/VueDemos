@@ -17,7 +17,7 @@ class holyNeo4j {
     this.svgScale = null;
     this.justLoaded = false;
     this.options = {
-      arrowSize: 4,
+      arrowSize: 10,
       nodeRadius: 15,
       nodeTextColor: "#333",
       noseTextSize: "14px",
@@ -70,8 +70,24 @@ class holyNeo4j {
       .attr("width", "100%")
       .attr("height", "100%");
 
-    this.nodeSvg = this.svg.append("g").attr("class", "nodes");
     this.linkSvg = this.svg.append("g").attr("class", "links");
+    this.nodeSvg = this.svg.append("g").attr("class", "nodes");
+
+    var arrowMarker = this.svg
+      .append("marker")
+      .attr("id", "arrow")
+      .attr("markerUnits", "strokeWidth")
+      .attr("markerWidth", this.options.arrowSize) //
+      .attr("markerHeight", this.options.arrowSize)
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", this.options.arrowSize + this.options.nodeRadius) // arrowSize + nodeRadius
+      .attr("refY", "0")
+      .attr("orient", "auto");
+    var arrow_path = "M0,-5L10,0L0,5"; // 定义箭头形状
+    arrowMarker
+      .append("path")
+      .attr("d", arrow_path)
+      .attr("fill", this.options.linkColor);
   }
   clearSvg() {}
   initSimulation() {
@@ -203,7 +219,7 @@ class holyNeo4j {
     // node.append(shadow)
   }
   appendTextToNode(node) {
-    node
+    this.nodeText = node
       .append("text")
       // .attr("class", 'text')
       .attr("text-anchor", "middle")
@@ -252,11 +268,13 @@ class holyNeo4j {
         // .attr("pointer-events", "none")
         .append("textPath")
         .attr("class", "textPath")
+        // .attr("text-anchor", "right")
         .attr(
           "href",
           d => "#" + d.source + d[this.options.linkTextKey] + d.target
         )
-        .attr("startOffset", "75%")
+        .attr("startOffset", "50%")
+        // .attr("side", "right")
         .attr("font-size", this.options.linkTextSize)
         // .attr("text-anchor", "middle")
         .text(d => {
@@ -267,12 +285,17 @@ class holyNeo4j {
     );
   }
   appendLineToLink(link) {
-    return link
-      .append("path")
-      .attr("class", "path")
-      .attr("id", d => d.source + d[this.options.linkTextKey] + d.target)
-      .attr("fill", "#a5abb6")
-      .attr("stroke", "none");
+    return (
+      link
+        .append("path")
+        .attr("class", "path")
+        // .attr("viewBox", [])
+        .attr("id", d => d.source + d[this.options.linkTextKey] + d.target)
+        .attr("fill", "none")
+        .attr("marker-end", "url(#arrow)")
+        .attr("stroke", this.options.linkColor)
+        .attr("stroke-width", "1")
+    );
     // this.myLink = link.append("line").attr("stroke", "#999");
     // .attr("marker-mid", "url(#head)");
   }
@@ -330,32 +353,45 @@ class holyNeo4j {
             relationship.target === link.source)
         );
       });
+
       // debugger
       sameAll
-        .sort((a, b) => a.source - b.target)
+        // .sort((a, b) => a.source - b.source)
         .forEach((s, i) => {
-          if (s.type === "草莓") {
-            debugger;
-          }
           s.temp = {};
-          s.temp.sameIndex = i + 1;
-          s.temp.sameTotal = sameAll.length;
-          s.temp.sameTotalHalf = s.temp.sameTotal / 2;
-          s.temp.sameUneven = s.temp.sameTotal % 2 !== 0; // 单数个点
-          s.temp.sameMiddleLink =
-            s.temp.sameUneven === true &&
-            Math.ceil(s.temp.sameTotalHalf) === s.temp.sameIndex;
-          s.temp.sameLowerHalf = s.temp.sameIndex <= s.temp.sameTotalHalf;
-          s.temp.sameArcDirection = 1;
-          // s.temp.sameArcDirection = s.temp.sameLowerHalf ? 0 : 1;
-          s.temp.sameIndexCorrected = s.temp.sameLowerHalf
-            ? s.temp.sameIndex
-            : s.temp.sameIndex - Math.ceil(s.temp.sameTotalHalf);
+          s.temp.realIndex = i + 1;
+          s.temp.totalNumber = sameAll.length;
+          s.temp.halfNumber = s.temp.totalNumber / 2; // 关系数的一半
+          s.temp.numberIsEven = s.temp.totalNumber % 2 !== 0; // 单数个点
+          s.temp.isMiddle =
+            s.temp.numberIsEven &&
+            Math.ceil(s.temp.halfNumber) === s.temp.realIndex;
+          s.temp.lowerThanHalfNumber = s.temp.realIndex <= s.temp.halfNumber; // 当前index是否小于关系数的一半
+          s.temp.sweepDirection = 1;
+          // if (s.source > s.target){
+          //    s.temp.sweepDirection = 1
+          // }
+          // s.temp.sweepDirection = s.temp.lowerThanHalfNumber ? 0 : 1;
+          if (s.temp.lowerThanHalfNumber) {
+            s.temp.mapIndex = s.temp.realIndex;
+          } else {
+            s.temp.isMaped = 1;
+            s.temp.mapIndex = s.temp.realIndex - Math.ceil(s.temp.halfNumber);
+          }
+          if (
+            (s.source > s.target && !s.temp.isMaped) ||
+            (s.source < s.target && s.temp.isMaped)
+          ) {
+            s.temp.sweepDirection = 0;
+          } else {
+            s.temp.sweepDirection = 1;
+          }
         });
+      if (sameAll.length === 4) console.log(sameAll, "sameall");
     });
-    var maxSame = Math.max(...relationships.map(d => d.temp.sameTotal));
+    var maxSame = Math.max(...relationships.map(d => d.temp.totalNumber));
     relationships.forEach(link => {
-      link.temp.maxSameHalf = Math.round(maxSame / 2);
+      link.temp.maxHalfNumber = Math.round(maxSame / 2);
     });
     // debugger;
     const links = relationships
@@ -366,9 +402,11 @@ class holyNeo4j {
     return { nodes, links };
   }
   updateNodeAndLink(nodes, links) {
-    this.updateNodes(nodes);
     this.updateLinks(links);
+    this.updateNodes(nodes);
 
+    // this.node.raise();
+    // this.nodeText.each(node => node.raise());
     this.simulation.nodes(this.nodes);
     this.simulation.force(
       "link",
@@ -413,18 +451,18 @@ class holyNeo4j {
   }
   tickLink() {
     if (this.linkSvg) {
-      this.linkSvg.selectAll("g.link").attr("transform", d => {
-        const angle = this.rotation(d.source, d.target);
-        return (
-          "translate(" +
-          d.source.x +
-          ", " +
-          d.source.y +
-          ") rotate(" +
-          angle +
-          ")"
-        );
-      });
+      // this.linkSvg.selectAll("g.link").attr("transform", d => {
+      //   const angle = this.rotation(d.source, d.target);
+      //   return (
+      //     "translate(" +
+      //     d.source.x +
+      //     ", " +
+      //     d.source.y +
+      //     ") rotate(" +
+      //     angle +
+      //     ")"
+      //   );
+      // });
 
       // this.tickRelationshipsTexts();
       this.tickRelationshipsOutlines();
@@ -583,30 +621,50 @@ class holyNeo4j {
         const dr = Math.sqrt(dx * dx + dy * dy);
         const unevenCorrection = d.temp.sameUneven ? 0 : 0.5;
         const curvature = 2;
-        let arc =
-          (1.0 / curvature) *
-          ((dr * d.temp.maxSameHalf) /
-            (d.temp.sameIndexCorrected - unevenCorrection));
-        if (d.temp.sameMiddleLink) {
+        // let arc =
+        //   (1.0 / curvature) *
+        //   ((dr * d.temp.maxHalfNumber) /
+        //     (d.temp.mapIndex - unevenCorrection));
+        let arc = (dr * d.temp.maxHalfNumber) / d.temp.mapIndex;
+        if (d.temp.isMiddle) {
           arc = 0;
         }
-        const direct = [
-          d.temp.sameArcDirection,
-          Math.abs(d.temp.sameArcDirection - 1)
-        ];
+        // const direct = [
+        //   d.temp.sweepDirection,
+        //   Math.abs(d.temp.sweepDirection - 1)
+        // ];
 
         // return `M ${rotatedPointA1.x} ${rotatedPointA1.y} L ${rotatedPointB1.x} ${rotatedPointB1.y} L ${rotatedPointC1.x} ${rotatedPointC1.y} L ${rotatedPointD1.x} ${rotatedPointD1.y} Z M ${rotatedPointA2.x} ${rotatedPointA2.y} L ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${rotatedPointC2.y} L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${rotatedPointE2.y} L ${rotatedPointF2.x} ${rotatedPointF2.y} L ${rotatedPointG2.x} ${rotatedPointG2.y} Z`;
-        return `M ${rotatedPointA1.x} ${rotatedPointA1.y} A ${arc} ${arc} 0 0 ${
-          direct[0]
-        } ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${
-          rotatedPointC2.y
-        } L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${
-          rotatedPointE2.y
-        } L ${rotatedPointF2.x} ${rotatedPointF2.y} A ${arc} ${arc} 0 0 ${
-          direct[1]
-        } ${rotatedPointD1.x} ${rotatedPointD1.y} Z`;
+        // return `M ${rotatedPointA1.x} ${rotatedPointA1.y} A ${arc} ${arc} 0 0 ${
+        //   direct[0]
+        // } ${rotatedPointB2.x} ${rotatedPointB2.y} L ${rotatedPointC2.x} ${
+        //   rotatedPointC2.y
+        // } L ${rotatedPointD2.x} ${rotatedPointD2.y} L ${rotatedPointE2.x} ${
+        //   rotatedPointE2.y
+        // } L ${rotatedPointF2.x} ${rotatedPointF2.y} A ${arc} ${arc} 0 0 ${
+        //   direct[1]
+        // } ${rotatedPointD1.x} ${rotatedPointD1.y} Z`;
+        return `M ${d.source.x} ${d.source.y} A ${arc} ${arc} 0 0 ${d.temp.sweepDirection} ${d.target.x} ${d.target.y}`;
+        // return (
+        //   "M" +
+        //   d.source.x +
+        //   "," +
+        //   d.source.y +
+        //   "A" +
+        //   arc +
+        //   "," +
+        //   arc +
+        //   " 0 0," +
+        //   d.temp.sweepDirection +
+        //   " " +
+        //   d.target.x +
+        //   "," +
+        //   d.target.y
+        // );
       });
-      text.attr("startOffset", d => (d.target.x > d.source.x ? "25%" : "75%"));
+
+      text.attr("startOffset", d => (d.target.x > d.source.x ? "40%" : "40%"));
+      text.attr("side", d => (d.target.x > d.source.x ? "left" : "right"));
     });
   }
   tickRelationshipsTexts() {

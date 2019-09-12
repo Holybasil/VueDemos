@@ -355,8 +355,8 @@ export default {
       },
       {
         id: 33422109,
-        source: 27327117,
-        type: "草莓",
+        source: 27544689,
+        type: "我是第二个",
         properties: {
           relationType: "4",
           linkedTypes: [],
@@ -365,7 +365,7 @@ export default {
           dbrRelation: "",
           loanIds: ["2018111210471200001", "2018122515590300001"]
         },
-        target: 27544689
+        target: 27327117
       },
       {
         id: 33422109,
@@ -640,7 +640,7 @@ export default {
       {
         id: 27188784,
         source: 27327117,
-        type: "1",
+        type: "我是第一个",
         properties: {
           relationType: "1",
           linkedTypes: [],
