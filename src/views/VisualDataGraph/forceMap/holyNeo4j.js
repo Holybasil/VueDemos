@@ -1,8 +1,21 @@
 import * as d3 from "d3";
 
-var timer = 0;
-var delay = 200;
-var prevent = false;
+const colors = [
+  "#1E78B4",
+  "#32A02C",
+  "#E3191C",
+  "#FF7F00",
+  "#6A3D9A",
+  "#B15928"
+];
+const colorsLighter = [
+  "#A6CEE3",
+  "#B2DF8A",
+  "#FB9A99",
+  "#FDBF6F",
+  "#CAB2D6",
+  "#FFFF99"
+];
 class holyNeo4j {
   constructor(selector, options = {}) {
     this.svg = null;
@@ -16,9 +29,12 @@ class holyNeo4j {
     this.svgTranslate = null;
     this.svgScale = null;
     this.justLoaded = false;
+    this.timer = 0;
+    this.delay = 200;
+    this.prevent = false;
     this.options = {
       arrowSize: 10,
-      nodeRadius: 15,
+      nodeRadius: 16,
       nodeTextColor: "#333",
       noseTextSize: "14px",
       nodeTextKey: "labels",
@@ -160,23 +176,47 @@ class holyNeo4j {
         // .join("g")
         .attr("class", "node")
         .on("dblclick", d => {
-          clearTimeout(timer);
-          prevent = true;
-          if (typeof this.options.onNodeDBClick === "function") {
+          if (
+            this.options.onNodeDBClick &&
+            typeof this.options.onNodeDBClick === "function"
+          ) {
+            clearTimeout(this.timer);
+            this.prevent = true;
             this.options.onNodeDBClick(d);
           } else {
-            this.stickNode(d);
+            // this.stickNode(d);
           }
         })
         .on("click", function(d) {
-          timer = setTimeout(() => {
-            if (!prevent) {
-              _this.node.classed("selected", false);
-              d3.select(this).classed("selected", true);
-              _this.onNodeClick(d);
-            }
-            prevent = false;
-          }, delay);
+          if (
+            _this.options.onNodeDBClick &&
+            typeof _this.options.onNodeDBClick === "function"
+          ) {
+            this.timer = setTimeout(() => {
+              if (!_this.prevent) {
+                _this.selectNodeAndNot(_this, this);
+                _this.onNodeClick(d);
+              }
+
+              _this.prevent = false;
+            }, _this.delay);
+          } else {
+            // _this.selectNodeAndNot(_this, this);
+            _this.node
+              .selectAll(".selected")
+              .style("stroke", "none")
+              .style("stroke-width", "unset")
+              .attr("r", _this.options.nodeRadius);
+            _this.node.selectAll(".selected").classed("selected", false);
+            d3.select(this)
+              .select("circle")
+              .classed("selected", true);
+            d3.select(".selected")
+              .style("stroke", d => colors[d.type - 1])
+              .style("stroke-width", _this.options.nodeRadius / 4)
+              .attr("r", _this.options.nodeRadius * 1.2);
+            _this.onNodeClick(d);
+          }
         })
         .on("mouseenter", d => {
           if (typeof this.options.onNodeMouseenter === "function") {
@@ -191,6 +231,21 @@ class holyNeo4j {
 
         .call(this.drag(this.simulation))
     );
+  }
+  selectNodeAndNot(_this, __this) {
+    _this.node
+      .selectAll(".selected")
+      .style("stroke", "none")
+      .style("stroke-width", "unset")
+      .attr("r", _this.options.nodeRadius);
+    _this.node.selectAll(".selected").classed("selected", false);
+    d3.select(__this)
+      .select("circle")
+      .classed("selected", true);
+    d3.select(".selected")
+      .style("stroke", d => colors[d.type - 1])
+      .style("stroke-width", _this.options.nodeRadius / 4)
+      .attr("r", _this.options.nodeRadius * 1.2);
   }
   onNodeClick(d) {
     // d.fx = d.fy = null;
@@ -215,7 +270,7 @@ class holyNeo4j {
     node
       .append("circle")
       .attr("r", this.options.nodeRadius)
-      .attr("fill", this.color());
+      .attr("fill", d => this.color(d.type));
     // node.append(shadow)
   }
   appendTextToNode(node) {
@@ -664,7 +719,12 @@ class holyNeo4j {
       });
 
       text.attr("startOffset", d => (d.target.x > d.source.x ? "40%" : "40%"));
-      text.attr("side", d => (d.target.x > d.source.x ? "left" : "right"));
+      // text.attr("transform", "rotate(180)");
+      text.text(d => {
+        return _this.options.linkTextMap
+          ? _this.options.linkTextMap[d[_this.options.linkTextKey]]
+          : d[_this.options.linkTextKey];
+      });
     });
   }
   tickRelationshipsTexts() {
@@ -692,9 +752,11 @@ class holyNeo4j {
       );
     });
   }
-  color() {
-    const scale = d3.scaleOrdinal(d3.schemeCategory10);
-    return d => scale(d.id);
+  color(type) {
+    // const scale = d3.scaleOrdinal(d3.schemeCategory10);
+    // return d => scale(d.type);
+
+    return colorsLighter[type - 1];
   }
   drag(simulation) {
     function dragstarted(d) {

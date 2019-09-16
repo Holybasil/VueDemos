@@ -80,10 +80,10 @@ export default {
           }
           this.property = { ...d.properties };
         },
-        onNodeDBClick: d => {
-          console.log(d);
-          this.getMoreData();
-        },
+        // onNodeDBClick: d => {
+        //   console.log(d);
+        //   this.getMoreData();
+        // },
         onLinkClick: d => {
           if (!this.isPanelShow) {
             this.isPanelShow = true;
@@ -184,13 +184,17 @@ export default {
   }
 }
 </style>
-<style>
+<style lang="scss">
 svg {
   cursor: move;
 }
 g.node,
 g.link {
   cursor: pointer;
+}
+g.node text {
+  stroke: none;
+  stroke-width: unset;
 }
 g.node circle {
   /* stroke: #ff0000; */
@@ -199,7 +203,10 @@ g.node circle {
   transition: all 0.2s ease-in;
 }
 g.selected circle {
-  transform: scale(1.4);
+  /* transform: scale(1.4); */
+  // stroke-width: 5;
+  // stroke: #d1d3d7;
+  // fill: none;
 }
 /* g.link .path {
   position: relative;

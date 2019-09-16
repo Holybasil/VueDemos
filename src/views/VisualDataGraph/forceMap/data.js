@@ -18,6 +18,7 @@ export default {
           email: "2555325@qq.com",
           timestamp: 1542592821631
         },
+        type: 1,
         labels: "张蒙蒙"
       },
       {
@@ -37,7 +38,8 @@ export default {
           email: "",
           timestamp: 1528859399192
         },
-        labels: ""
+        type: 3,
+        labels: "有钱哥哥"
       },
       {
         id: 38444141,
@@ -56,6 +58,7 @@ export default {
           email: "",
           timestamp: 1562221116913
         },
+        type: 2,
         labels: "秦晶"
       },
       {
@@ -75,6 +78,7 @@ export default {
           email: "",
           timestamp: 1537939444804
         },
+        type: 5,
         labels: "|王超锋"
       },
       {
@@ -100,6 +104,7 @@ export default {
           email: "2504397331@qq.com",
           timestamp: 1558678227747
         },
+        type: 3,
         labels: "迟佳慧|迟理科"
       },
       {
@@ -125,6 +130,7 @@ export default {
           email: "null",
           timestamp: 1548549730895
         },
+        type: 1,
         labels: "常洁|常洁;常洁"
       },
       {
@@ -156,6 +162,7 @@ export default {
           email: "20685945@qq.com",
           timestamp: 1556123732608
         },
+        type: 1,
         labels: "曹宇「搜易贷」|未知"
       },
       {
@@ -183,6 +190,7 @@ export default {
           email: "15378686@qq.com",
           timestamp: 1536445703924
         },
+        type: 5,
         labels: "王禹振|+8618510343299"
       },
       {
@@ -202,6 +210,7 @@ export default {
           email: "375805635@qq.com",
           timestamp: 1556118374792
         },
+        type: 2,
         labels: "未知|王晨晨"
       },
       {
@@ -221,6 +230,7 @@ export default {
           email: "null",
           timestamp: 1548550194389
         },
+        type: 6,
         labels: "马静|未知"
       },
       {
@@ -240,6 +250,7 @@ export default {
           email: "25525365@qq.com",
           timestamp: 1556119325521
         },
+        type: 4,
         labels: "屈妍妍|未知"
       },
       {
@@ -259,6 +270,7 @@ export default {
           email: "",
           timestamp: 1528877272911
         },
+        type: 1,
         labels: "|黄琦"
       },
       {
@@ -278,6 +290,7 @@ export default {
           email: "1985563@qq.com",
           timestamp: 1556132625263
         },
+        type: 3,
         labels: "张文辉"
       },
       {
@@ -297,6 +310,7 @@ export default {
           email: "",
           timestamp: 1538156684111
         },
+        type: 6,
         labels: "杨萌"
       },
       {
@@ -316,6 +330,7 @@ export default {
           email: "",
           timestamp: 1541051635640
         },
+        type: 3,
         labels: ""
       },
       {
@@ -335,6 +350,7 @@ export default {
           email: "",
           timestamp: 1528946318814
         },
+        type: 2,
         labels: "刘雨轩"
       }
     ],
