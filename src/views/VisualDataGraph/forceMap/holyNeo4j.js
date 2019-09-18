@@ -211,6 +211,10 @@ class holyNeo4j {
     node
       .append("circle")
       .attr("r", this.options.nodeRadius)
+      .attr("stroke", d =>
+        d[this.options.nodeImageKey] ? colorsLighter[d.type - 1] : "none"
+      )
+      .attr("stroke-width", d => (d[this.options.nodeImageKey] ? 4 : "none"))
       .attr("fill", d =>
         d[this.options.nodeImageKey]
           ? `url(#image${d.id})`
@@ -242,7 +246,11 @@ class holyNeo4j {
       .attr("font-size", this.options.nodeTextSize)
       .attr("fill", this.options.nodeTextColor)
       .attr("pointer-events", "none")
-      .attr("y", this.options.nodeRadius + this.options.nodeTextSize)
+      .attr("y", d =>
+        d[this.options.nodeImageKey]
+          ? this.options.nodeRadius + this.options.nodeTextSize
+          : this.options.nodeRadius / 3
+      )
       .text(d => {
         return d[this.options.nodeTextKey];
       });
