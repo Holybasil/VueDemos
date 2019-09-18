@@ -42,8 +42,11 @@
 // let data;
 // nodes中的group 是为了表示哪些node属于一个颜色
 // link中的value 是为了表示连线的粗细
-import data from "./data";
+// import data from "./data";
+import data from "./githubData";
+import moreData from "./githubMoreData";
 import * as d3 from "d3";
+// import HolyNeo4j from "holy-relationship-map";
 import VueDraggableResizable from "vue-draggable-resizable";
 
 import HolyNeo4j from "./holyNeo4j";
@@ -80,10 +83,10 @@ export default {
           }
           this.property = { ...d.properties };
         },
-        // onNodeDBClick: d => {
-        //   console.log(d);
-        //   this.getMoreData();
-        // },
+        onNodeDBClick: d => {
+          console.log(d);
+          this.getMoreData();
+        },
         onLinkClick: d => {
           if (!this.isPanelShow) {
             this.isPanelShow = true;
@@ -122,19 +125,20 @@ export default {
       this.simulation.force("center", d3.forceCenter(width / 2, height / 2));
     },
     async getMoreData() {
-      const res = await this.$axios.post(
-        // "/data.json"
-        "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getMoreForceData"
-      );
-      console.log(res.data);
+      // const res = await this.$axios.post(
+      //   // "/data.json"
+      //   "https://www.easy-mock.com/mock/5d65f13bde0085286bedfbe7/VueDemos/getMoreForceData"
+      // );
+      // console.log(res.data);
+
       // const { nodes, links } = res.data.data;
-      const nodes = res.data.data.nodes.map(d => Object.create(d));
-      const links = res.data.data.relationships
-        .filter(d => {
-          return d.source !== d.target;
-        })
-        .map(d => Object.create(d));
-      this.svg.updateNodeAndLink(nodes, links);
+      // const nodes = moreData.nodes.map(d => Object.create(d));
+      // const links = moreData.links
+      //   .filter(d => {
+      //     return d.source !== d.target;
+      //   })
+      //   .map(d => Object.create(d));
+      this.svg.updateGraph(moreData);
     }
   }
 };
@@ -195,6 +199,7 @@ g.link {
 g.node text {
   stroke: none;
   stroke-width: unset;
+  // background-color: aqua;
 }
 g.node circle {
   /* stroke: #ff0000; */
