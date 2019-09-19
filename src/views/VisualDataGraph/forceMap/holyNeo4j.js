@@ -35,6 +35,7 @@ class holyNeo4j {
     this.options = {
       arrowSize: 10,
       nodeRadius: 16,
+      nodeKey: "id",
       nodeTextColor: "#333",
       nodeTextSize: 14,
       nodeTextKey: "label",
@@ -42,7 +43,7 @@ class holyNeo4j {
       linkColor: "#a5abb6",
       linkTextColor: "#333",
       linkTextSize: "12px",
-      linkHighlightColor: "#66B1FF",
+      linkHighlightColor: "#ff9300",
       linkKey: "id",
       linkTextRotate: false,
       linkTextKey: "type",
@@ -307,7 +308,7 @@ class holyNeo4j {
         "href",
         d => "#" + d.source + d[this.options.linkTextKey] + d.target
       )
-      .attr("startOffset", "50%")
+      .attr("startOffset", "40%")
       .attr("font-size", this.options.linkTextSize)
       .text(d => {
         return this.options.linkTextMap
@@ -325,21 +326,34 @@ class holyNeo4j {
       .attr("stroke", this.options.linkColor)
       .attr("stroke-width", "1");
   }
+  appendMapLineToLink(link) {
+    return link
+      .append("path")
+      .attr("class", "pathMap")
+      .attr(
+        "id",
+        d => d.source + d[this.options.linkTextKey] + d.target + "map"
+      )
+      .attr("fill", "none")
+      .attr("stroke", "none");
+  }
   appendLinkGroup() {
     const link = this.appendLink();
     const linkText = this.appendTextToLink(link);
     const linkPath = this.appendLineToLink(link);
+    const linkPathMap = this.appendMapLineToLink(link);
     return {
       link,
       linkText,
-      linkPath
+      linkPath,
+      linkPathMap
     };
   }
   updateNodes(nodes) {
     this.nodes.push(...nodes);
     this.node = this.nodeSvg
       .selectAll("g.node")
-      .data(this.nodes, d => d[this.options.linkKey]);
+      .data(this.nodes, d => d[this.options.nodeKey]);
     const nodeSet = this.appendNodeGroup();
     this.node = nodeSet.merge(this.node);
   }
@@ -380,6 +394,8 @@ class holyNeo4j {
     this.link = linkSet.link.merge(this.link);
     this.linkPath = this.linkSvg.selectAll(".path");
     this.linkPath = linkSet.linkPath.merge(this.linkPath);
+    this.linkPathMap = this.linkSvg.selectAll(".pathMap");
+    this.linkPathMap = linkSet.linkPathMap.merge(this.linkPathMap);
     this.linkText = this.linkSvg.selectAll(".text");
     this.linkText = linkSet.linkText.merge(this.linkText);
   }
@@ -445,6 +461,7 @@ class holyNeo4j {
   tickLink() {
     if (this.linkSvg) {
       this.tickLinkPath();
+      this.tickLinkPathMap();
     }
   }
   tickLinkPath() {
@@ -464,12 +481,37 @@ class holyNeo4j {
         }
         return `M ${d.source.x} ${d.source.y} A ${arc} ${arc} 0 0 ${d.temp.sweepDirection} ${d.target.x} ${d.target.y}`;
       });
-
-      text.attr("startOffset", d => (d.target.x > d.source.x ? "40%" : "40%"));
+      text.attr("href", d =>
+        d.source.x < d.target.x
+          ? `#${d.source[_this.options.nodeKey]}${
+              d[_this.options.linkTextKey]
+            }${d.target[_this.options.nodeKey]}`
+          : `#${d.source[_this.options.nodeKey]}${
+              d[_this.options.linkTextKey]
+            }${d.target[_this.options.nodeKey]}map`
+      );
       text.text(d => {
         return _this.options.linkTextMap
           ? _this.options.linkTextMap[d[_this.options.linkTextKey]]
           : d[_this.options.linkTextKey];
+      });
+    });
+  }
+  tickLinkPathMap() {
+    this.linkSvg.selectAll("g.link").each(function(relationship) {
+      const rel = d3.select(this);
+      const pathMap = rel.select(".pathMap");
+      pathMap.attr("d", d => {
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        let arc = (dr * d.temp.maxHalfNumber) / d.temp.mapIndex;
+        if (d.temp.isMiddle) {
+          arc = 0;
+        }
+        return `M ${d.target.x} ${d.target.y} A ${arc} ${arc} 0 0 ${Number(
+          !d.temp.sweepDirection
+        )} ${d.source.x} ${d.source.y}`;
       });
     });
   }
